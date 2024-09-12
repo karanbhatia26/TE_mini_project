@@ -1,4 +1,6 @@
 /my_env/
 /training/
 /flow_code/
-.venv
+/venv/
+/FastSAM/
+/ultralytics/
