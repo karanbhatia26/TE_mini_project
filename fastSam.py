@@ -1,24 +1,39 @@
+from FastSAM.fastsam import FastSAM, FastSAMPrompt
+# import supervision as sv
 import os
-from FastSAM.fastsam import FastSam
+import torch
+import cv2 as cv
+model = FastSAM('./FastSAM/weights/FastSAM.pt')
 
-# Load FastSam model
-model = FastSam.load_model('/FastSAM/FastSAM-s.pt')
+folder = './images/'
+Images = ['dogs.jpg','cat.jpg','person.jpg']
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-# Directory of extracted frames
-frames_dir = '/input'
-output_dir = '/output'
+for idx, img_name in enumerate(Images):
+    path = os.path.join(folder, img_name)
+    img = cv.imread(path)
+    cv.imshow('Image', img)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+    print(f"Processing image: {path}")
 
-# Ensure output directory exists
-os.makedirs(output_dir, exist_ok=True)
+    everything_results = model(path, device=DEVICE, retina_masks=True, imgsz=1024, conf=0.2, iou=0.5)
+    prompt_process = FastSAMPrompt(path, everything_results, device=DEVICE)
+    ann = prompt_process.point_prompt(points=[[620, 360]], pointlabel=[1])
 
-# Process each frame
-for frame_file in sorted(os.listdir(frames_dir)):
-    frame_path = os.path.join(frames_dir, frame_file)
-    image = FastSam.load_image(frame_path)
-    
-    # Apply FastSam to segment the dog
-    segmented_image = model.segment(image, target='dog')  # Assuming there's a target option for 'dog'
-    
-    # Save the segmented image
-    output_path = os.path.join(output_dir, frame_file)
-    FastSam.save_image(segmented_image, output_path)
+
+    print(f"Number of masks generated: {len(ann)}")
+
+    output_filename = f'output_{idx}.jpg'
+    output_path = os.path.join('./output/', output_filename)
+    print(f"Saving annotated image to: {output_path}")
+
+    try:
+        prompt_process.plot(annotations=ann, output_path=output_path)
+    except Exception as e:
+        print(f"Error occurred while saving annotated image: {e}")
+# everything_results = model(image_path, device=DEVICE, retina_masks=True, imgsz=1024, conf=0.4, iou=0.9,)
+# prompt_process = FastSAMPrompt(image_path, everything_results, device=DEVICE)
+# ann = prompt_process.text_prompt(text='Penguin')
+# prompt_process.plot(annotations=ann, output='./output/')
+
