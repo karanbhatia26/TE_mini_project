@@ -1,72 +1,92 @@
-from fastsam import FastSAM, FastSAMPrompt
-# import supervision as sv
 import os
 import torch
 import cv2 as cv
+from fastsam import FastSAM, FastSAMPrompt
+import time
+import numpy as np
+
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+print(f"Using device: {DEVICE}")
+
+# Load the FastSAM model once to avoid re-loading it for every frame
 model = FastSAM('./weights/FastSAM-x.pt')
 
-folder = './images'
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(DEVICE)
-
-import os
-
-def load_image_paths_from_folder(folder_path):
-    image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff')  # Add more formats if needed
-    images = []
-
-    # Iterate through all files in the directory
-    for filename in os.listdir(folder_path):
-        if filename.lower().endswith(image_extensions):  # Check if the file is an image
-            image_path = os.path.join(folder_path, filename)
-            images.append(image_path)  # Append the image file path to the list
-
-    return images
-
-
-def Fast_SAM(Images,prompt_points):
-    for idx, img_name in enumerate(Images):
-        path = os.path.join(img_name)
-        print(f"Processing image: {path}")
-
-        everything_results = model(path, device=DEVICE, retina_masks=True, imgsz=1024, conf=0.2, iou=0.5)
-        prompt_process = FastSAMPrompt(path, everything_results, device=DEVICE)
-        # ann = prompt_process.point_prompt(points=[[230, 220]], pointlabel=[1])
-        ann = prompt_process.point_prompt(points=prompt_points, pointlabel=[1])
-
-
-        print(f"Number of masks generated: {len(ann)}")
-
-        output_filename = f'output_{idx}.jpg'
-        output_path = os.path.join('./output/', output_filename)
-        print(f"Saving annotated image to: {output_path}")
-
-        try:
-            prompt_process.plot(annotations=ann, output_path=output_path)
-        except Exception as e:
-            print(f"Error occurred while saving annotated image: {e}")
-# everything_results = model(image_path, device=DEVICE, retina_masks=True, imgsz=1024, conf=0.4, iou=0.9,)
-# prompt_process = FastSAMPrompt(image_path, everything_results, device=DEVICE)
-# ann = prompt_process.text_prompt(text='Penguin')
-# prompt_process.plot(annotations=ann, output='./output/')
-
-
-
-def Preprocessing_with_FastSAM(input_video,input_path,output_path,frame_rate,points,video_name):
+def process_single_frame(frame, prompt_points):
+    """Process a single frame using FastSAM."""
+    # Save the frame to a temporary file
+    temp_image_path = 'temp_frame.jpg'
+    cv.imwrite(temp_image_path, frame)
     
-    command_01 = f'ffmpeg -i "{input_path}/{input_video}.mp4" -vf fps={frame_rate} "{input_path}/output_images_%04d.jpg"'
-    os.system(command_01)
-
-    Images = load_image_paths_from_folder(input_path)
-    Fast_SAM(Images, points)
-
-    command_02 = f'ffmpeg -framerate {frame_rate} -i "{output_path}/output_%d.jpg" -c:v libx264 -pix_fmt yuv420p "{output_path}/{video_name}.mp4"'
-    os.system(command_02)
+    # Process the frame
+    everything_results = model(temp_image_path, device=DEVICE, retina_masks=True, imgsz=1024, conf=0.2, iou=0.5)
+    prompt_process = FastSAMPrompt(temp_image_path, everything_results, device=DEVICE)
+    ann = prompt_process.point_prompt(points=prompt_points, pointlabel=[1])
     
-input_video = 'input_video'
-input_path = r'C:\Users\Samarth Nilkanth\TE_mini_project\FastSAM\images'
-output_path = r'C:\Users\Samarth Nilkanth\TE_mini_project\FastSAM\output'
+    # Get the annotated frame using plot_to_result
+    output_frame = prompt_process.plot_to_result(annotations=ann)
+    
+    # Convert to an OpenCV-compatible image if necessary (assuming the output is a PIL image or similar)
+    output_frame = np.array(output_frame)
+    output_frame = cv.cvtColor(output_frame, cv.COLOR_RGB2BGR)
+    
+    return output_frame
 
+def process_camera_feed():
+    # Initialize the camera (0 is typically the default camera)
+    cap = cv.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open camera.")
+        return
 
-Preprocessing_with_FastSAM(input_video=input_video,input_path=input_path,output_path=output_path,frame_rate=2,points=[[230, 220]],video_name='Stiched_video')
+    # Frame rate control
+    start_time = time.time()
+    
+    prompt_points = [[230, 220]]  # Example prompt points, will be replaced by midpoint
 
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                print("Error: Could not read frame from camera.")
+                break
+
+            # Show the original frame
+            cv.imshow('Original Video Feed', frame)
+
+            # Get the frame's dimensions
+            height, width, _ = frame.shape
+
+            # Calculate the midpoint of the frame
+            mid_x = width // 2
+            mid_y = height // 2
+
+            # Swap the midpoint with the original point
+            prompt_points = [[mid_x, mid_y]]
+
+            # Process the frame every second (1 second interval)
+            if time.time() - start_time >= 1:
+                start_time = time.time()
+
+                # Process the frame using FastSAM with the new prompt points (midpoint)
+                processed_frame = process_single_frame(frame, prompt_points)
+
+                # Show the processed frame
+                cv.imshow('Processed Video Feed', processed_frame)
+
+            # Break the loop on 'q' key press
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                print("Exit signal received (q pressed).")
+                break
+
+    except Exception as e:
+        print(f"Error occurred during video processing: {e}")
+
+    finally:
+        # Ensure that the resources are released properly
+        print("Releasing camera and closing windows.")
+        cap.release()
+        cv.destroyAllWindows()
+
+if __name__ == '__main__':
+    # Run camera feed processing
+    process_camera_feed()
