@@ -28,15 +28,21 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  fl_chart:
+    git:
+      url: https://github.com/imaNNeoFighT/fl_chart.git
   flutter:
     sdk: flutter
   animated_text_kit: ^4.2.1
   font_awesome_flutter: ^10.0.0
   mesh_gradient: ^1.0.0
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+  js: ^0.7.1
   cupertino_icons: ^1.0.8
+  video_player: ^2.7.13
+  camera: ^0.11.0+2
+  path_provider: ^2.0.15
+  path: ^1.9.0  # Match the version required by flutter_test
+
 
 dev_dependencies:
   flutter_test:
