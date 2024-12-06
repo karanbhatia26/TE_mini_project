@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart'; // Import the fl_chart package
 import 'app_page.dart';
+import 'workout_page.dart';
 
 class FitnessDashboardApp extends StatelessWidget {
   const FitnessDashboardApp({super.key});
@@ -108,6 +109,17 @@ class FitnessDashboard extends StatelessWidget {
                   );
                 },
                 child: const Text('Go to App Page'),
+              ),
+            ),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => WorkoutPage()),
+                  );
+                },
+                child: const Text('Start a new Exercise!'),
               ),
             ),
           ],
