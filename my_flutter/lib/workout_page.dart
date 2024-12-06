@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'arms_workout.dart'; // Import the ArmsWorkoutPage
+import 'back_workout.dart'; // Import the BackWorkoutPage
+import 'chest_workout.dart'; // Import the ChestWorkoutPage
+import 'legs_workout.dart'; // Import the LegsWorkoutPage
+import 'core_workout.dart'; // Import the CoreWorkoutPage
+import 'cardio_workout.dart'; // Import the CardioWorkoutPage
 
 class WorkoutPage extends StatelessWidget {
   const WorkoutPage({Key? key}) : super(key: key);
@@ -36,10 +41,22 @@ class WorkoutPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
+                // Chest button with navigation
                 Expanded(
-                  child: WorkoutCard(
-                    title: "Chest",
-                    subtitle: "Pectoralis Major, Pectoralis Minor",
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to ChestWorkoutPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ChestWorkoutPage(),
+                        ),
+                      );
+                    },
+                    child: WorkoutCard(
+                      title: "Chest",
+                      subtitle: "Pectoralis Major, Pectoralis Minor",
+                    ),
                   ),
                 ),
               ],
@@ -47,17 +64,41 @@ class WorkoutPage extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
+                // Legs button with navigation
                 Expanded(
-                  child: WorkoutCard(
-                    title: "Legs",
-                    subtitle: "Quads, Hamstrings, Glutes, Calves",
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to LegsWorkoutPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LegsWorkoutPage(),
+                        ),
+                      );
+                    },
+                    child: WorkoutCard(
+                      title: "Legs",
+                      subtitle: "Quads, Hamstrings, Glutes, Calves",
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
+                // Core button with navigation
                 Expanded(
-                  child: WorkoutCard(
-                    title: "Core",
-                    subtitle: "Abs, Obliques and more",
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to CoreWorkoutPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CoreWorkoutPage(),
+                        ),
+                      );
+                    },
+                    child: WorkoutCard(
+                      title: "Core",
+                      subtitle: "Abs, Obliques and more",
+                    ),
                   ),
                 ),
               ],
@@ -65,17 +106,41 @@ class WorkoutPage extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
+                // Back button with navigation
                 Expanded(
-                  child: WorkoutCard(
-                    title: "Back",
-                    subtitle: "Lats, Traps, Rhomboids and more",
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to BackWorkoutPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BackWorkoutPage(),
+                        ),
+                      );
+                    },
+                    child: WorkoutCard(
+                      title: "Back",
+                      subtitle: "Lats, Traps, Rhomboids and more",
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
+                // Cardio button with navigation
                 Expanded(
-                  child: WorkoutCard(
-                    title: "Cardio",
-                    subtitle: "Heart, Lungs, Stamina and Health",
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to CardioWorkoutPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CardioWorkoutPage(),
+                        ),
+                      );
+                    },
+                    child: WorkoutCard(
+                      title: "Cardio",
+                      subtitle: "Heart, Lungs, Stamina and Health",
+                    ),
                   ),
                 ),
               ],
