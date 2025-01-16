@@ -105,17 +105,6 @@ class FitnessDashboard extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AppPage()),
-                  );
-                },
-                child: const Text('Go to App Page'),
-              ),
-            ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
                     MaterialPageRoute(builder: (context) => const WorkoutPage()),
                   );
                 },
