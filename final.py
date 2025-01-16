@@ -5,6 +5,7 @@ import time
 import numpy as np
 from ultralytics import YOLO  # YOLOv8 for human detection
 from fastsam import FastSAM, FastSAMPrompt
+import numpy as np
 
 # Device Configuration
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -34,7 +35,7 @@ def detect_human_coordinates(frame):
 
 def process_single_frame(frame, prompt_points):
     """Process a single frame using FastSAM with prompt points."""
-    
+    # try:
     temp_image_path = 'temp_frame.jpg'
     cv.imwrite(temp_image_path, frame)
     # Perform FastSAM segmentation
@@ -52,6 +53,58 @@ def process_single_frame(frame, prompt_points):
     # except Exception as e:
     #     print(f"Error processing frame: {e}")
     #     return None
+
+def un_stitch_video(input_video_path, temp_frame_folder, fps=3):
+    """Un-stitch the video into frames at a given fps using FFmpeg."""
+    os.makedirs(temp_frame_folder, exist_ok=True)
+    os.system(f"ffmpeg -i {input_video_path} -vf fps={fps} {temp_frame_folder}/frame_%04d.jpg")
+
+# def stitch_video(output_video_path, temp_frame_folder, frame_rate=3):
+#     """Stitch individual frames back into a video using FFmpeg."""
+#     os.system(f"ffmpeg -framerate {frame_rate} -i {temp_frame_folder}/frame_%04d.jpg -c:v libx264 -pix_fmt yuv420p {output_video_path}")
+
+def prof(input_video_path, temp_frame_folder, fps=3):
+    """Process the video, detect humans, and segment them."""
+    un_stitch_video(input_video_path, temp_frame_folder, fps=fps)
+    ann_final = []
+    # Get the list of frames in the folder
+    frame_files = [f for f in os.listdir(temp_frame_folder) if f.endswith('.jpg')]
+    frame_files.sort()  # Ensure frames are sorted in the correct order
+
+    for idx, frame_file in enumerate(frame_files):
+        frame_path = os.path.join(temp_frame_folder, frame_file)
+        frame = cv.imread(frame_path)
+
+        # Detect human coordinates using YOLO
+        human_coords = detect_human_coordinates(frame)
+
+        if len(human_coords) > 0:
+            print(f"Detected Human Coordinates: {human_coords}")
+            # Process the frame with the first human's coordinates (you can modify this to handle more humans if needed)
+            frame_ann = process_single_frame(frame, prompt_points=[human_coords[0]])  
+            ann_final.append(frame_ann)
+        else:
+            print("No human detected.")
+            # frame_ann = frame  # Keep original frame if no human detected
+            frame_ann = np.zeros((frame.shape[0], frame.shape[1]), dtype=bool)
+            ann_final.append(frame_ann)
+        return ann_final
+    
+        # # Save the processed frame back to disk
+        # output_frame_path = os.path.join(temp_frame_folder, f"processed_frame_{idx:04d}.jpg")
+        # cv.imwrite(output_frame_path, processed_frame)
+
+    # Stitch the processed frames into a final video
+    # stitch_video(output_video_path, temp_frame_folder, frame_rate=fps)
+
+# if __name__ == '__main__':
+#     input_video_path = r"FastSAM/images/input_video.mp4"
+#     output_video_path = r"FastSAM/output_video.mp4"
+#     temp_frame_folder = r"FastSAM/temp_frames"
+
+#     process_video(input_video_path, output_video_path, temp_frame_folder, fps=3)
+#     print(f"Processed video saved to {output_video_path}")
+
 
 def process_camera_feed():
     """Capture live camera feed, detect humans, and process segmentation."""
@@ -76,24 +129,5 @@ def process_camera_feed():
             print("No human detected.")
             frame_ann = np.zeros((frame.shape[0], frame.shape[1]), dtype=bool)
             ann_final.append(frame_ann)
+        print("")
     return ann_final
-
-            # Display the original and processed feeds
-            # cv.imshow('Original Video Feed', frame)
-            # if processed_frame is not None:
-            #     cv.imshow('Processed Video Feed', processed_frame)
-
-            # # Break loop with 'q'
-            # if cv.waitKey(1) & 0xFF == ord('q'):
-            #     print("Exit signal received (q pressed).")
-            #     break
-
-    # except Exception as e:
-    #     print(f"Error occurred during video processing: {e}")
-
-    # finally:
-    #     # Release resources
-    #     print("Releasing camera and closing windows.")
-    #     cap.release()
-    #     cv.destroyAllWindows()
-process_camera_feed()
