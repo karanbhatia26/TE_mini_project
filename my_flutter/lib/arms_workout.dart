@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'app_page.dart';
 
 class ArmsWorkoutPage extends StatelessWidget {
-  const ArmsWorkoutPage({Key? key}) : super(key: key);
+  const ArmsWorkoutPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,30 +25,51 @@ class ArmsWorkoutPage extends StatelessWidget {
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
           childAspectRatio: 0.8, // Adjust to make cards smaller
-          children: const [
+          children: [
             DetailedWorkoutCard(
               title: "Bicep Curls",
               subtitle: "Bicep",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AppPage()),
+                );
+              },
             ),
             DetailedWorkoutCard(
               title: "Hammer Curls",
               subtitle: "Bicep",
+              onTap: () {
+                // Add navigation or action here
+              },
             ),
             DetailedWorkoutCard(
               title: "Lateral Raises",
               subtitle: "Shoulders",
+              onTap: () {
+                // Add navigation or action here
+              },
             ),
             DetailedWorkoutCard(
               title: "Overhead Press",
               subtitle: "Shoulders",
+              onTap: () {
+                // Add navigation or action here
+              },
             ),
             DetailedWorkoutCard(
               title: "Overhead Tricep Extensions",
               subtitle: "Triceps",
+              onTap: () {
+                // Add navigation or action here
+              },
             ),
             DetailedWorkoutCard(
               title: "Skullcrushers",
               subtitle: "Triceps",
+              onTap: () {
+                // Add navigation or action here
+              },
             ),
           ],
         ),
@@ -59,48 +81,53 @@ class ArmsWorkoutPage extends StatelessWidget {
 class DetailedWorkoutCard extends StatelessWidget {
   final String title;
   final String subtitle;
+  final VoidCallback onTap; // Add a callback for onTap
 
   const DetailedWorkoutCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
-  }) : super(key: key);
+    required this.onTap, // Require onTap parameter
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black, // Dark background for consistency
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(8), // Reduced padding for smaller cards
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14, // Reduced font size
-              fontWeight: FontWeight.bold,
-              color: Colors.white, // White text on dark background
+    return GestureDetector( // Wrap with GestureDetector to handle taps
+      onTap: onTap, 
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black, // Dark background for consistency
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 4,
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 12, // Reduced font size
-              color: Colors.grey[300], // Lighter grey for subtitle
+          ],
+        ),
+        padding: const EdgeInsets.all(8), // Reduced padding for smaller cards
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14, // Reduced font size
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // White text on dark background
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12, // Reduced font size
+                color: Colors.grey[300], // Lighter grey for subtitle
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

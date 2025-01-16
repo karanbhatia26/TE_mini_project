@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CardioWorkoutPage extends StatelessWidget {
-  const CardioWorkoutPage({Key? key}) : super(key: key);
+  const CardioWorkoutPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +61,10 @@ class DetailedWorkoutCard extends StatelessWidget {
   final String subtitle;
 
   const DetailedWorkoutCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

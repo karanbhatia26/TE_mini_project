@@ -7,7 +7,7 @@ import 'core_workout.dart'; // Import the CoreWorkoutPage
 import 'cardio_workout.dart'; // Import the CardioWorkoutPage
 
 class WorkoutPage extends StatelessWidget {
-  const WorkoutPage({Key? key}) : super(key: key);
+  const WorkoutPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,7 @@ class WorkoutPage extends StatelessWidget {
                         ),
                       );
                     },
-                    child: WorkoutCard(
+                    child: const WorkoutCard(
                       title: "Arms",
                       subtitle: "Biceps, Triceps, Shoulders and more",
                     ),
@@ -53,7 +53,7 @@ class WorkoutPage extends StatelessWidget {
                         ),
                       );
                     },
-                    child: WorkoutCard(
+                    child: const WorkoutCard(
                       title: "Chest",
                       subtitle: "Pectoralis Major, Pectoralis Minor",
                     ),
@@ -76,7 +76,7 @@ class WorkoutPage extends StatelessWidget {
                         ),
                       );
                     },
-                    child: WorkoutCard(
+                    child: const WorkoutCard(
                       title: "Legs",
                       subtitle: "Quads, Hamstrings, Glutes, Calves",
                     ),
@@ -95,7 +95,7 @@ class WorkoutPage extends StatelessWidget {
                         ),
                       );
                     },
-                    child: WorkoutCard(
+                    child: const WorkoutCard(
                       title: "Core",
                       subtitle: "Abs, Obliques and more",
                     ),
@@ -118,7 +118,7 @@ class WorkoutPage extends StatelessWidget {
                         ),
                       );
                     },
-                    child: WorkoutCard(
+                    child: const WorkoutCard(
                       title: "Back",
                       subtitle: "Lats, Traps, Rhomboids and more",
                     ),
@@ -137,7 +137,7 @@ class WorkoutPage extends StatelessWidget {
                         ),
                       );
                     },
-                    child: WorkoutCard(
+                    child: const WorkoutCard(
                       title: "Cardio",
                       subtitle: "Heart, Lungs, Stamina and Health",
                     ),
@@ -157,10 +157,10 @@ class WorkoutCard extends StatelessWidget {
   final String subtitle;
 
   const WorkoutCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

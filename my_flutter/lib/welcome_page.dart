@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
-import 'dashboard.dart';
-
+import 'signup_page.dart';
+import 'login_page.dart';
 
 class TrackFitApp extends StatelessWidget {
   const TrackFitApp({super.key});
@@ -27,10 +27,10 @@ class TrackFitHomePage extends StatefulWidget {
 class _TrackFitHomePageState extends State<TrackFitHomePage> {
   final ScrollController _scrollController = ScrollController();
 
-// Scroll to top method
+  // Scroll to top method
   void _scrollToTop() {
     _scrollController.animateTo(
-      0, // Scroll to the top
+      0,
       duration: const Duration(seconds: 1),
       curve: Curves.easeInOut,
     );
@@ -38,48 +38,11 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
 
   // Scroll to sections based on index
   void _scrollToSection(int sectionIndex) {
-    double offset = sectionIndex * 500; // Adjust based on section heights
+    double offset = sectionIndex * 500;
     _scrollController.animateTo(
       offset,
       duration: const Duration(seconds: 1),
       curve: Curves.easeInOut,
-    );
-  }
-
-  // Show Login/Registration window
-  void _showLoginWindow(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Login / Register'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const TextField(
-                decoration: InputDecoration(labelText: 'Email'),
-              ),
-              const TextField(
-                decoration: InputDecoration(labelText: 'Password'),
-                obscureText: true,
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () {
-                  _showLoginWindow(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                ),
-                child: const Text(
-                  'Submit',
-                  style: TextStyle(color: Colors.black),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 
@@ -96,7 +59,6 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
             _buildHomePage(),
             _buildExploreOurProgramSection(),
             _buildVirtualTrainingSection(context),
-            _buildVideoComparisonSection(),
             _buildTrackFitPassSection(),
             _buildFooterSection(),
           ],
@@ -133,7 +95,10 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
               const SizedBox(width: 25),
               TextButton(
                 onPressed: () {
-                  _showLoginWindow(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                  );
                 },
                 child: const Text(
                   'Login',
@@ -142,7 +107,10 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  _showLoginWindow(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                 child: const Text(
@@ -182,13 +150,11 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
       color: Colors.black,
       child: Row(
         children: [
-          // Left Content
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Typing Effect for Slogan
                 AnimatedTextKit(
                   animatedTexts: [
                     TypewriterAnimatedText(
@@ -219,7 +185,10 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        _showLoginWindow(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
@@ -236,7 +205,10 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
                     const SizedBox(width: 10),
                     TextButton.icon(
                       onPressed: () {
-                        _showLoginWindow(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                        );
                       },
                       icon: const Icon(Icons.play_arrow, color: Colors.white),
                       label: const Text(
@@ -249,7 +221,6 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
               ],
             ),
           ),
-          // Right Content with Gym Image
           Container(
             width: 500,
             height: 400,
@@ -261,7 +232,6 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
               borderRadius: BorderRadius.circular(15),
             ),
           ),
-          // Right Vertical TrackFit Branding
           const RotatedBox(
             quarterTurns: 3,
             child: Padding(
@@ -291,7 +261,6 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Explore Our Program Heading with Border
           Container(
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
@@ -325,14 +294,12 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
               _buildProgramCard('Recovery Mode', Icons.healing,
                   'Optimize your recovery with guided rest periods and tips.'),
             ],
-            
           ),
         ],
       ),
     );
   }
 
-  // Program Card Widget
   Widget _buildProgramCard(String title, IconData icon, String description) {
     return Container(
       width: 230,
@@ -388,185 +355,102 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
     );
   }
 
-  // Video Comparison Section
-  Widget _buildVideoComparisonSection() {
+  Widget _buildVirtualTrainingSection(BuildContext context) {
     return Container(
-      height: 700,
+      height: 600,
       color: Colors.black,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'Video Comparison',
+            'Virtual Personal Training',
             style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 32,
-                fontWeight: FontWeight.bold),
+              color: Colors.grey[500],
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          const SizedBox(height: 70),
+          const SizedBox(height: 40),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildVideoPlaceholder('Your Camera Feed'),
-              _buildVideoPlaceholder('Trainer Video'),
+              _buildFeatureCard('Chest Press', Icons.fitness_center),
+              _buildFeatureCard('Squats', Icons.directions_run),
+              _buildFeatureCard('Deadlifts', Icons.accessibility_new),
+              _buildFeatureCard('Leg Press', Icons.account_balance),
+              _buildFeatureCard('Muscle Build', Icons.build),
+              _buildFeatureCard('Glute Workout', Icons.access_alarm),
             ],
+          ),
+          const SizedBox(height: 50),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildFeatureCard('Lunges', Icons.directions_walk),
+              _buildFeatureCard('Bicep Curls', Icons.fitness_center),
+              _buildFeatureCard('Tricep Extensions', Icons.sports_kabaddi),
+              _buildFeatureCard('Shoulder Press', Icons.accessibility),
+              _buildFeatureCard('Abs', Icons.directions_run),
+              _buildFeatureCard('Cardio', Icons.directions_bike),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SignUpScreen(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+            ),
+            child: const Text(
+              'Join Now!',
+              style: TextStyle(color: Colors.black),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // Video Placeholder
-  Widget _buildVideoPlaceholder(String label) {
+  Widget _buildFeatureCard(String title, IconData icon) {
     return Container(
-      width: 500,
-      height: 500,
+      width: 150,
+      height: 150,
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(10),
       ),
       child: Center(
-        child: Text(
-          label,
-          style: const TextStyle(color: Colors.white),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: Colors.blue,
+              size: 40,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
   }
 
-// Virtual Training Section
-Widget _buildVirtualTrainingSection(BuildContext context) {
-  return Container(
-    height: 600,
-    color: Colors.black,
-    padding: const EdgeInsets.all(20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          'Virtual Personal Training',
-          style: TextStyle(
-            color: Colors.grey[500],
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 40),
-
-        // First Row of Features
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildFeatureCard('Chest Press', Icons.fitness_center),
-            _buildFeatureCard('Squats', Icons.directions_run),
-            _buildFeatureCard('Deadlifts', Icons.accessibility_new),
-            _buildFeatureCard('Leg Press', Icons.account_balance),
-            _buildFeatureCard('Muscle Build', Icons.build),
-            _buildFeatureCard('Glute Workout', Icons.access_alarm),
-          ],
-        ),
-        const SizedBox(height: 50),
-
-        // Second Row of Features
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildFeatureCard('Lunges', Icons.directions_walk),
-            _buildFeatureCard('Bicep Curls', Icons.fitness_center),
-            _buildFeatureCard('Tricep Extensions', Icons.sports_kabaddi),
-            _buildFeatureCard('Shoulder Press', Icons.accessibility),
-            _buildFeatureCard('Abs', Icons.directions_run),
-            _buildFeatureCard('Cardio', Icons.directions_bike),
-          ],
-        ),
-        const SizedBox(height: 20),
-
-        // Navigation Button to Dashboard
-        ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const FitnessDashboard(), // Correct Class Name
-              ),
-            );
-          },
-          child: const Text('Go to Dashboard'),
-        ),
-        const SizedBox(height: 40),
-
-        // Join Now Button
-        ElevatedButton(
-          onPressed: () {
-            // Add action for Join Now button
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-          ),
-          child: const Text(
-            'Join Now!',
-            style: TextStyle(color: Colors.black),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-// Feature Card Widget
-Widget _buildFeatureCardWidget(String title, IconData icon) {
-  return Column(
-    children: [
-      Icon(icon, size: 50, color: Colors.blue),
-      const SizedBox(height: 10),
-      Text(
-        title,
-        style: const TextStyle(fontSize: 16, color: Colors.white),
-        textAlign: TextAlign.center,
-      ),
-    ],
-  );
-}
-
-
- // Feature Card with Icon
-Widget _buildFeatureCard(String title, IconData icon) {
-  return Container(
-    width: 150, // Ensure this width fits within the parent widget
-    height: 150,
-    decoration: BoxDecoration(
-      color: Colors.grey[900],
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: Colors.blue,
-            size: 40,
-          ),
-          const SizedBox(height: 10), // Added const for better performance
-          Text(
-            title,
-            style: const TextStyle( // Added const to avoid runtime recalculation
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-
-// TrackFit Pass Section
-// TrackFit Pass Section
   Widget _buildTrackFitPassSection() {
     return Container(
       height: 600,
@@ -575,7 +459,6 @@ Widget _buildFeatureCard(String title, IconData icon) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Title
           Text(
             'TrackFit Pass',
             style: TextStyle(
@@ -585,11 +468,8 @@ Widget _buildFeatureCard(String title, IconData icon) {
             ),
           ),
           const SizedBox(height: 50),
-
-          // Pass Cards Section (all four cards in a single row)
           Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center, // Center the cards horizontally
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildPassCard(
                 title: 'Basic Package',
@@ -602,7 +482,7 @@ Widget _buildFeatureCard(String title, IconData icon) {
                   'No real-time corrections',
                 ],
               ),
-              const SizedBox(width: 30), // Reduced space between cards
+              const SizedBox(width: 30),
               _buildPassCard(
                 title: 'Mid Package',
                 price: 'Rs. 499',
@@ -614,7 +494,7 @@ Widget _buildFeatureCard(String title, IconData icon) {
                   'Real-time Corrections',
                 ],
               ),
-              const SizedBox(width: 30), // Reduced space between cards
+              const SizedBox(width: 30),
               _buildPassCard(
                 title: 'Pro Package',
                 price: 'Rs. 999',
@@ -626,7 +506,7 @@ Widget _buildFeatureCard(String title, IconData icon) {
                   'Real-time Corrections',
                 ],
               ),
-              const SizedBox(width: 30), // Reduced space between cards
+              const SizedBox(width: 30),
               _buildPassCard(
                 title: 'Athlete Package',
                 price: 'Rs. 1199',
@@ -645,15 +525,14 @@ Widget _buildFeatureCard(String title, IconData icon) {
     );
   }
 
-// Individual Pass Card (with rectangular design)
   Widget _buildPassCard({
     required String title,
     required String price,
     required List<String> description,
   }) {
     return Container(
-      width: 240, // Set a fixed width to make the card rectangular
-      height: 400, // Fixed height for rectangular shape
+      width: 240,
+      height: 400,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.grey[900],
@@ -664,6 +543,7 @@ Widget _buildFeatureCard(String title, IconData icon) {
             spreadRadius: 2,
             blurRadius: 8,
           ),
+
         ],
       ),
       child: Column(

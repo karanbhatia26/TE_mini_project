@@ -116,7 +116,7 @@ class FitnessDashboard extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => WorkoutPage()),
+                    MaterialPageRoute(builder: (context) => const WorkoutPage()),
                   );
                 },
                 child: const Text('Start a new Exercise!'),

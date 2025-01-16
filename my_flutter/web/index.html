@@ -31,6 +31,24 @@
 
   <title>my_flutter</title>
   <link rel="manifest" href="manifest.json">
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCsnIORnivf-3xeEWLlhIIhsALbStEeOks",
+    authDomain: "trackfit-e285e.firebaseapp.com",
+    projectId: "trackfit-e285",
+    storageBucket: "trackfit-e285e.firebasestorage.app",
+    messagingSenderId: "973473598364",
+    appId: "1:973473598364:web:5891dd49f6121c45521659",
+    measurementId: "G-SHZ0DVZLPP"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
