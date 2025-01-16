@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // Import the fl_chart package
-import 'app_page.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'workout_page.dart';
 
 class FitnessDashboardApp extends StatelessWidget {
@@ -17,8 +18,68 @@ class FitnessDashboardApp extends StatelessWidget {
   }
 }
 
-class FitnessDashboard extends StatelessWidget {
+class FitnessDashboard extends StatefulWidget {
   const FitnessDashboard({super.key});
+
+  @override
+  _FitnessDashboardState createState() => _FitnessDashboardState();
+}
+
+class _FitnessDashboardState extends State<FitnessDashboard> {
+  late User? user;
+  late DocumentReference userDoc;
+
+  // Map for storing fetched data
+  Map<String, dynamic> currentData = {};
+
+  @override
+  void initState() {
+    super.initState();
+
+    user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      userDoc = FirebaseFirestore.instance.collection('users').doc(user!.uid);
+      _fetchUserData();
+    }
+  }
+
+  // Fetch user data from Firestore
+  void _fetchUserData() async {
+    if (user != null) {
+      final docSnapshot = await userDoc.get();
+      if (docSnapshot.exists) {
+        setState(() {
+          currentData = docSnapshot.data() as Map<String, dynamic>;
+        });
+      }
+    }
+  }
+
+  // Method to handle value updates
+  Future<void> _updateValue(String fieldName) async {
+    final newValue = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Update $fieldName'),
+        content: TextField(
+          keyboardType: TextInputType.text,
+          decoration: InputDecoration(hintText: 'Enter new value'),
+          onSubmitted: (input) => Navigator.pop(dialogContext, input),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, null),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (newValue != null && newValue.isNotEmpty) {
+      await userDoc.update({fieldName: newValue});
+      _fetchUserData();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,33 +93,57 @@ class FitnessDashboard extends StatelessWidget {
         child: ListView(
           children: [
             // Header Section
-            const Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: AssetImage('assets/avatar.png'), // Add avatar
-                  radius: 30,
-                ),
-                SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Hello, Gilbert', style: TextStyle(fontSize: 18)),
-                    Text('Keep Moving & Stay Healthy', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-                Spacer(),
-                Text('18 August 2020', style: TextStyle(color: Colors.grey)),
-              ],
-            ),
+            user == null
+                ? const Center(child: CircularProgressIndicator())
+                : Row(
+                    children: [
+                      const CircleAvatar(
+                        backgroundImage: AssetImage('assets/avatar.png'),
+                        radius: 30,
+                      ),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Hello, ${currentData['name'] ?? "User"}',
+                              style: const TextStyle(fontSize: 18)),
+                          const Text('Keep Moving & Stay Healthy',
+                              style: TextStyle(color: Colors.grey)),
+                        ],
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
             const SizedBox(height: 16),
 
             // Stat Cards
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                statCard('6.30 Hours', 'Sleep', Icons.nightlight, Colors.blue),
-                statCard('5 Liters', 'Water', Icons.water_drop, Colors.teal),
-                statCard('1590 Steps', 'Walking', Icons.directions_walk, Colors.orange),
+                statCard(
+                  currentData['sleep'] ?? '6.30 Hours',
+                  'Sleep',
+                  Icons.nightlight,
+                  Colors.blue,
+                  userDoc,
+                  'sleep',
+                ),
+                statCard(
+                  currentData['water'] ?? '5 Liters',
+                  'Water',
+                  Icons.water_drop,
+                  Colors.teal,
+                  userDoc,
+                  'water',
+                ),
+                statCard(
+                  currentData['walking'] ?? '1590 Steps',
+                  'Walking',
+                  Icons.directions_walk,
+                  Colors.orange,
+                  userDoc,
+                  'walking',
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -117,22 +202,32 @@ class FitnessDashboard extends StatelessWidget {
     );
   }
 
-  Widget statCard(String value, String label, IconData icon, Color iconColor) {
+  Widget statCard(
+    String value,
+    String label,
+    IconData icon,
+    Color iconColor,
+    DocumentReference userDoc,
+    String fieldName,
+  ) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: Colors.grey[850],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: iconColor, size: 28),
-            const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(color: Colors.grey)),
-          ],
+      child: GestureDetector(
+        onTap: () => _updateValue(fieldName),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: Colors.grey[850],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: iconColor, size: 28),
+              const SizedBox(height: 8),
+              Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(label, style: const TextStyle(color: Colors.grey)),
+            ],
+          ),
         ),
       ),
     );

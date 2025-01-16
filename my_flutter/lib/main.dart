@@ -29,7 +29,7 @@ void main() async {
   }
 
   // Firebase initialization succeeded, run the main app
-  runApp(MaterialApp( // Remove const here
+  runApp(const MaterialApp( // Remove const here
     home: TrackFitApp(),
     debugShowCheckedModeBanner: false,
   ));
@@ -39,7 +39,7 @@ void main() async {
 class ErrorScreen extends StatelessWidget {
   final String error;
 
-  const ErrorScreen({required this.error});
+  const ErrorScreen({super.key, required this.error});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +51,7 @@ class ErrorScreen extends StatelessWidget {
           children: [
             const Icon(Icons.error, color: Colors.red, size: 100),
             const SizedBox(height: 20),
-            Text(
+            const Text(
               "Failed to initialize Firebase",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -59,7 +59,7 @@ class ErrorScreen extends StatelessWidget {
             Text(
               "Error: $error",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.red),
+              style: const TextStyle(fontSize: 16, color: Colors.red),
             ),
             const SizedBox(height: 40),
             ElevatedButton(

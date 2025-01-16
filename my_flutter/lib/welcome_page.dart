@@ -12,7 +12,7 @@ class TrackFitApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      home: TrackFitHomePage(),
+      home: const TrackFitHomePage(),
     );
   }
 }
@@ -707,10 +707,10 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
                       style: TextStyle(color: Colors.white70)),
                 ],
               ),
-              Column(
+              const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Social Media',
                     style: TextStyle(
                       color: Colors.white,
@@ -718,7 +718,7 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   Row(
                     children: [
                       FaIcon(
@@ -726,13 +726,13 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
                         color: Colors.white,
                         size: 20,
                       ),
-                      const SizedBox(width: 15),
+                      SizedBox(width: 15),
                       FaIcon(
                         FontAwesomeIcons.twitter,
                         color: Colors.white,
                         size: 20,
                       ),
-                      const SizedBox(width: 15),
+                      SizedBox(width: 15),
                       FaIcon(
                         FontAwesomeIcons.facebook,
                         color: Colors.white,
