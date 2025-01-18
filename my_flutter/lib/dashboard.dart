@@ -63,7 +63,7 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
         title: Text('Update $fieldName'),
         content: TextField(
           keyboardType: TextInputType.text,
-          decoration: InputDecoration(hintText: 'Enter new value'),
+          decoration: const InputDecoration(hintText: 'Enter new value'),
           onSubmitted: (input) => Navigator.pop(dialogContext, input),
         ),
         actions: [

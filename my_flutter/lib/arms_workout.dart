@@ -40,35 +40,30 @@ class ArmsWorkoutPage extends StatelessWidget {
               title: "Hammer Curls",
               subtitle: "Bicep",
               onTap: () {
-                // Add navigation or action here
               },
             ),
             DetailedWorkoutCard(
               title: "Lateral Raises",
               subtitle: "Shoulders",
               onTap: () {
-                // Add navigation or action here
               },
             ),
             DetailedWorkoutCard(
               title: "Overhead Press",
               subtitle: "Shoulders",
               onTap: () {
-                // Add navigation or action here
               },
             ),
             DetailedWorkoutCard(
               title: "Overhead Tricep Extensions",
               subtitle: "Triceps",
               onTap: () {
-                // Add navigation or action here
               },
             ),
             DetailedWorkoutCard(
               title: "Skullcrushers",
               subtitle: "Triceps",
               onTap: () {
-                // Add navigation or action here
               },
             ),
           ],

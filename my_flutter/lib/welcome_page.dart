@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:mesh_gradient/mesh_gradient.dart';
 import 'signup_page.dart';
 import 'login_page.dart';
 
