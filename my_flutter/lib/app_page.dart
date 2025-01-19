@@ -1,9 +1,117 @@
 import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:ui_web' as ui;
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:dio/dio.dart';
+
+class WebcamProcessor {
+  html.VideoElement? videoElement;
+  html.MediaRecorder? mediaRecorder;
+  List<html.Blob> recordedChunks = [];
+  Timer? processingTimer;
+  final Function(Map<String, dynamic>) onFeedback;
+  final Duration processInterval = Duration(seconds: 3);
+  
+  WebcamProcessor({required this.onFeedback});
+
+  void startProcessing() {
+    videoElement = html.VideoElement()
+      ..width = 480
+      ..height = 360
+      ..autoplay = true;
+
+    html.window.navigator.mediaDevices?.getUserMedia({
+      'video': {
+        'width': 480,
+        'height': 360,
+        'frameRate': {'ideal': 30}
+      }
+    }).then((stream) {
+      videoElement!.srcObject = stream;
+      startRecording(stream);
+      
+      processingTimer = Timer.periodic(processInterval, (timer) {
+        stopAndProcessRecording();
+      });
+    });
+  }
+
+  void startRecording(html.MediaStream stream) {
+    recordedChunks = [];
+    final options = {'mimeType': 'video/webm;codecs=vp8'};
+    
+    mediaRecorder = html.MediaRecorder(stream, options);
+    mediaRecorder!.addEventListener('dataavailable', (event) {
+      if (event is html.BlobEvent) {
+        recordedChunks.add(event.data!);
+      }
+    });
+    
+    mediaRecorder!.start();
+  }
+
+  Future<void> stopAndProcessRecording() async {
+    if (mediaRecorder?.state == 'recording') {
+      mediaRecorder!.stop();
+      
+      await Future.delayed(Duration(milliseconds: 100));
+      
+      if (recordedChunks.isNotEmpty) {
+        final blob = html.Blob(recordedChunks, 'video/webm');
+        await sendToServer(blob);
+      }
+      
+      mediaRecorder!.start();
+      recordedChunks = [];
+    }
+  }
+
+  Future<void> sendToServer(html.Blob videoBlob) async {
+    try {
+      final data = FormData();
+      final bytes = await blobToBytes(videoBlob);
+      
+      data.files.add(MapEntry(
+        'video',
+        MultipartFile.fromBytes(bytes, filename: 'exercise.webm')
+      ));
+
+      final dio = Dio();
+      final response = await dio.post(
+        'http://localhost:5000/process-exercise',
+        data: data,
+      );
+
+      if (response.statusCode == 200) {
+        onFeedback(response.data);
+      }
+    } catch (e) {
+      print('Error sending video to server: $e');
+    }
+  }
+
+  Future<List<int>> blobToBytes(html.Blob blob) async {
+    final completer = Completer<List<int>>();
+    final reader = html.FileReader();
+    
+    reader.onLoadEnd.listen((e) {
+      final bytes = (reader.result as List<int>);
+      completer.complete(bytes);
+    });
+    
+    reader.readAsArrayBuffer(blob);
+    return completer.future;
+  }
+
+  void dispose() {
+    processingTimer?.cancel();
+    mediaRecorder?.stop();
+    videoElement?.srcObject?.getTracks().forEach((track) => track.stop());
+  }
+}
+// ... [Keep the WebcamProcessor class as is] ...
 
 class AppPage extends StatefulWidget {
   const AppPage({super.key});
@@ -14,14 +122,12 @@ class AppPage extends StatefulWidget {
 
 class _AppPageState extends State<AppPage> {
   late VideoPlayerController _controller;
+  late WebcamProcessor _webcamProcessor;
   bool _webcamStarted = false;
   bool _isProcessing = false;
   String _feedback = '';
   double _similarity = 0.0;
   static const String viewType = 'videoElement';
-  html.MediaRecorder? _mediaRecorder;
-  List<html.Blob> _recordedChunks = [];
-  html.MediaStream? _stream;
 
   @override
   void initState() {
@@ -33,106 +139,19 @@ class _AppPageState extends State<AppPage> {
         });
       });
 
-    ui.platformViewRegistry.registerViewFactory(viewType, (int viewId) {
-      return _createVideoElement();
-    });
-  }
-
-  Future<void> _startRecording(html.MediaStream stream) async {
-    _stream = stream;
-    _recordedChunks = [];
-    final options = {
-      'mimeType': 'video/webm;codecs=vp8,opus'
-    };
-    
-    try {
-      _mediaRecorder = html.MediaRecorder(stream, options);
-      
-      _mediaRecorder?.addEventListener('dataavailable', (event) {
-        if (event is html.BlobEvent && event.data != null) {
-          _recordedChunks.add(event.data!);
-        }
-      });
-
-      _mediaRecorder?.start();
-    } catch (e) {
-      debugPrint('Error starting recording: $e');
-    }
-  }
-
-  Future<void> _stopRecordingAndProcess() async {
-    setState(() {
-      _isProcessing = true;
-      _feedback = 'Processing your exercise...';
-    });
-
-    try {
-      if (_mediaRecorder?.state == 'recording') {
-        _mediaRecorder?.stop();
-        await Future.delayed(const Duration(milliseconds: 500));
-      }
-
-      if (_recordedChunks.isEmpty) {
-        throw Exception('No video data recorded');
-      }
-
-      final blob = html.Blob(_recordedChunks, 'video/webm');
-      final data = FormData();
-      
-      // Convert Blob to File
-      final videoFile = await _blobToFile(blob, 'exercise_recording.webm');
-      data.files.add(
-        MapEntry('video', 
-          MultipartFile.fromBytes(
-            await _fileToBytes(videoFile),
-            filename: 'exercise_recording.webm',
-          ),
-        ),
-      );
-
-      final dio = Dio();
-      final response = await dio.post(
-        'http://localhost:5000/process-exercise',
-        data: data,
-      );
-
-      if (response.statusCode == 200) {
-        final results = response.data;
+    _webcamProcessor = WebcamProcessor(
+      onFeedback: (results) {
         setState(() {
           _similarity = results['average_similarity'] ?? 0.0;
           _feedback = _generateFeedback(results);
+          _isProcessing = false;
         });
-      } else {
-        setState(() {
-          _feedback = 'Error processing exercise. Please try again.';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _feedback = 'Error: $e';
-      });
-    } finally {
-      setState(() {
-        _isProcessing = false;
-      });
-      
-      // Reset recording
-      _recordedChunks = [];
-      if (_stream != null) {
-        await _startRecording(_stream!);
-      }
-    }
-  }
+      },
+    );
 
-  Future<html.File> _blobToFile(html.Blob blob, String filename) async {
-    return html.File([blob], filename);
-  }
-
-  Future<List<int>> _fileToBytes(html.File file) async {
-    final reader = html.FileReader();
-    reader.readAsArrayBuffer(file);
-    await reader.onLoad.first;
-    return reader.result as List<int>;
+    ui.platformViewRegistry.registerViewFactory(viewType, (int viewId) {
+      return _webcamProcessor.videoElement ?? html.VideoElement();
+    });
   }
 
   String _generateFeedback(Map<String, dynamic> results) {
@@ -155,35 +174,6 @@ class _AppPageState extends State<AppPage> {
     return feedback.isEmpty ? 'Good job! Keep it up!' : feedback;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('TrackFit - Exercise Tracking'),
-        backgroundColor: Colors.blue,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildWebcamSection(),
-                _buildVideoSection(),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _buildControlSection(),
-            if (_feedback.isNotEmpty) 
-              _buildFeedbackSection(),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildWebcamSection() {
     return Column(
       children: [
@@ -201,7 +191,10 @@ class _AppPageState extends State<AppPage> {
         const SizedBox(height: 10),
         ElevatedButton(
           onPressed: _webcamStarted ? null : () {
-            setState(() => _webcamStarted = true);
+            setState(() {
+              _webcamStarted = true;
+              _webcamProcessor.startProcessing();
+            });
           },
           child: Text(_webcamStarted ? 'Webcam Active' : 'Start Webcam'),
         ),
@@ -229,12 +222,13 @@ class _AppPageState extends State<AppPage> {
         const SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
-            if (_controller.value.isPlaying) {
-              _controller.pause();
-            } else {
-              _controller.play();
-            }
-            setState(() {});
+            setState(() {
+              if (_controller.value.isPlaying) {
+                _controller.pause();
+              } else {
+                _controller.play();
+              }
+            });
           },
           child: Icon(
             _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
@@ -248,7 +242,7 @@ class _AppPageState extends State<AppPage> {
     return _isProcessing
         ? const CircularProgressIndicator()
         : ElevatedButton(
-            onPressed: _webcamStarted ? _stopRecordingAndProcess : null,
+            onPressed: _webcamStarted ? () {} : null,
             child: const Text('Analyze Exercise'),
           );
   }
@@ -283,28 +277,39 @@ class _AppPageState extends State<AppPage> {
     );
   }
 
-  html.VideoElement _createVideoElement() {
-    final videoElement = html.VideoElement()
-      ..width = 480
-      ..height = 360
-      ..autoplay = true
-      ..controls = false;
-
-    html.window.navigator.mediaDevices?.getUserMedia({'video': true}).then((stream) {
-      videoElement.srcObject = stream;
-      _startRecording(stream);
-    }).catchError((error) {
-      debugPrint('Error accessing webcam: $error');
-    });
-
-    return videoElement;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('TrackFit - Exercise Tracking'),
+        backgroundColor: Colors.blue,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildWebcamSection(),
+                _buildVideoSection(),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildControlSection(),
+            if (_feedback.isNotEmpty) 
+              _buildFeedbackSection(),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _mediaRecorder?.stop();
-    _stream?.getTracks().forEach((track) => track.stop());
+    _webcamProcessor.dispose();
     super.dispose();
   }
 }

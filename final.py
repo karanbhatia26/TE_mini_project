@@ -116,10 +116,13 @@ def process_camera_feed():
     
     while True:
         # Capture frame-by-frame
-        ret, frame = cap.read()
-        if not ret:
+        for _ in range(3):
+            ret, frame = cap.read()
+            if ret:
+                break
+        else:
             print("Error: Could not read frame from camera.")
-            break
+            continue
         # Detect human midpoints using YOLOv8
         human_coords = detect_human_coordinates(frame)
         if len(human_coords) > 0:
