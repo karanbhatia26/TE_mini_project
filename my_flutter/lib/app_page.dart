@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:ui_web' as ui;
 import 'dart:async';
@@ -12,8 +11,8 @@ class WebcamProcessor {
   List<html.Blob> recordedChunks = [];
   Timer? processingTimer;
   final Function(Map<String, dynamic>) onFeedback;
-  final Duration processInterval = Duration(seconds: 3);
-  
+  final Duration processInterval = const Duration(seconds: 3);
+
   WebcamProcessor({required this.onFeedback});
 
   void startProcessing() {
@@ -31,7 +30,7 @@ class WebcamProcessor {
     }).then((stream) {
       videoElement!.srcObject = stream;
       startRecording(stream);
-      
+
       processingTimer = Timer.periodic(processInterval, (timer) {
         stopAndProcessRecording();
       });
@@ -41,28 +40,28 @@ class WebcamProcessor {
   void startRecording(html.MediaStream stream) {
     recordedChunks = [];
     final options = {'mimeType': 'video/webm;codecs=vp8'};
-    
+
     mediaRecorder = html.MediaRecorder(stream, options);
     mediaRecorder!.addEventListener('dataavailable', (event) {
       if (event is html.BlobEvent) {
         recordedChunks.add(event.data!);
       }
     });
-    
+
     mediaRecorder!.start();
   }
 
   Future<void> stopAndProcessRecording() async {
     if (mediaRecorder?.state == 'recording') {
       mediaRecorder!.stop();
-      
-      await Future.delayed(Duration(milliseconds: 100));
-      
+
+      await Future.delayed(const Duration(milliseconds: 100));
+
       if (recordedChunks.isNotEmpty) {
         final blob = html.Blob(recordedChunks, 'video/webm');
         await sendToServer(blob);
       }
-      
+
       mediaRecorder!.start();
       recordedChunks = [];
     }
@@ -72,11 +71,9 @@ class WebcamProcessor {
     try {
       final data = FormData();
       final bytes = await blobToBytes(videoBlob);
-      
+
       data.files.add(MapEntry(
-        'video',
-        MultipartFile.fromBytes(bytes, filename: 'exercise.webm')
-      ));
+          'video', MultipartFile.fromBytes(bytes, filename: 'exercise.webm')));
 
       final dio = Dio();
       final response = await dio.post(
@@ -95,12 +92,12 @@ class WebcamProcessor {
   Future<List<int>> blobToBytes(html.Blob blob) async {
     final completer = Completer<List<int>>();
     final reader = html.FileReader();
-    
+
     reader.onLoadEnd.listen((e) {
       final bytes = (reader.result as List<int>);
       completer.complete(bytes);
     });
-    
+
     reader.readAsArrayBuffer(blob);
     return completer.future;
   }
@@ -159,7 +156,7 @@ class _AppPageState extends State<AppPage> {
     final maxDelay = results['max_delay'] ?? 0;
     final idealCalories = results['ideal_calories'] ?? 0.0;
     final actualCalories = results['actual_calories'] ?? 0.0;
-    
+
     String feedback = '';
     if (similarity < 0.7) {
       feedback += 'Try to match the trainer\'s form more closely. ';
@@ -167,10 +164,10 @@ class _AppPageState extends State<AppPage> {
     if (maxDelay > 10) {
       feedback += 'You\'re falling behind, try to keep up with the pace. ';
     }
-    
+
     feedback += '\nCalories burned: ${actualCalories.toStringAsFixed(1)} kcal ';
     feedback += '(Ideal: ${idealCalories.toStringAsFixed(1)} kcal)';
-    
+
     return feedback.isEmpty ? 'Good job! Keep it up!' : feedback;
   }
 
@@ -190,12 +187,14 @@ class _AppPageState extends State<AppPage> {
         ),
         const SizedBox(height: 10),
         ElevatedButton(
-          onPressed: _webcamStarted ? null : () {
-            setState(() {
-              _webcamStarted = true;
-              _webcamProcessor.startProcessing();
-            });
-          },
+          onPressed: _webcamStarted
+              ? null
+              : () {
+                  setState(() {
+                    _webcamStarted = true;
+                    _webcamProcessor.startProcessing();
+                  });
+                },
           child: Text(_webcamStarted ? 'Webcam Active' : 'Start Webcam'),
         ),
       ],
@@ -298,8 +297,7 @@ class _AppPageState extends State<AppPage> {
             ),
             const SizedBox(height: 20),
             _buildControlSection(),
-            if (_feedback.isNotEmpty) 
-              _buildFeedbackSection(),
+            if (_feedback.isNotEmpty) _buildFeedbackSection(),
           ],
         ),
       ),

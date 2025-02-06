@@ -12,6 +12,10 @@ class FitnessDashboardApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
+        appBarTheme: AppBarTheme(
+          elevation: 4,
+          backgroundColor: Colors.blueGrey[900],
+        ),
       ),
       home: const FitnessDashboard(),
     );
@@ -86,7 +90,7 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fitness Dashboard'),
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Colors.blueGrey[900],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -106,7 +110,8 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Hello, ${currentData['name'] ?? "User"}',
-                              style: const TextStyle(fontSize: 18)),
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.w600)),
                           const Text('Keep Moving & Stay Healthy',
                               style: TextStyle(color: Colors.grey)),
                         ],
@@ -114,9 +119,9 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
                       const Spacer(),
                     ],
                   ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            // Stat Cards
+            // Stat Cards with shadow and more padding
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -146,7 +151,7 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Activity Chart Section
             Container(
@@ -154,17 +159,29 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
               decoration: BoxDecoration(
                 color: Colors.grey[850],
                 borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.6),
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text('Activity',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      )),
                   SizedBox(height: 8),
-                  BarChartWidget(), // Add BarChartWidget
+                  BarChartWidget(),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Map Section (Placeholder for now)
             Container(
@@ -172,28 +189,51 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
               decoration: BoxDecoration(
                 color: Colors.grey[850],
                 borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.6),
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Running Map', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text('Running Map',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
                   SizedBox(height: 8),
-                  Placeholder(fallbackHeight: 150, color: Colors.grey), // Replace with Map widget later
+                  Placeholder(fallbackHeight: 150, color: Colors.grey),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            // New Button Section
+            // New Button Section with custom styling
             Center(
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const WorkoutPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const WorkoutPage()),
                   );
                 },
-                child: const Text('Start a new Exercise!'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.blueAccent, // Button color
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 30),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  'Start a new Exercise!',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -219,12 +259,21 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
           decoration: BoxDecoration(
             color: Colors.grey[850],
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             children: [
-              Icon(icon, color: iconColor, size: 28),
+              Icon(icon, color: iconColor, size: 30),
               const SizedBox(height: 8),
-              Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(value,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
               Text(label, style: const TextStyle(color: Colors.grey)),
             ],
           ),
@@ -240,7 +289,7 @@ class BarChartWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 150,
+      height: 180,
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
@@ -248,31 +297,31 @@ class BarChartWidget extends StatelessWidget {
             BarChartGroupData(
               x: 0,
               barRods: [
-                BarChartRodData(toY: 6, color: Colors.blue, width: 10),
+                BarChartRodData(toY: 6, color: Colors.blue, width: 12),
               ],
             ),
             BarChartGroupData(
               x: 1,
               barRods: [
-                BarChartRodData(toY: 8, color: Colors.red, width: 10),
+                BarChartRodData(toY: 8, color: Colors.red, width: 12),
               ],
             ),
             BarChartGroupData(
               x: 2,
               barRods: [
-                BarChartRodData(toY: 5, color: Colors.green, width: 10),
+                BarChartRodData(toY: 5, color: Colors.green, width: 12),
               ],
             ),
             BarChartGroupData(
               x: 3,
               barRods: [
-                BarChartRodData(toY: 9, color: Colors.yellow, width: 10),
+                BarChartRodData(toY: 9, color: Colors.yellow, width: 12),
               ],
             ),
             BarChartGroupData(
               x: 4,
               barRods: [
-                BarChartRodData(toY: 7, color: Colors.orange, width: 10),
+                BarChartRodData(toY: 7, color: Colors.orange, width: 12),
               ],
             ),
           ],
@@ -295,15 +344,20 @@ class BarChartWidget extends StatelessWidget {
                 getTitlesWidget: (value, meta) {
                   switch (value.toInt()) {
                     case 0:
-                      return const Text('Mon', style: TextStyle(color: Colors.white));
+                      return const Text('Mon',
+                          style: TextStyle(color: Colors.white));
                     case 1:
-                      return const Text('Tue', style: TextStyle(color: Colors.white));
+                      return const Text('Tue',
+                          style: TextStyle(color: Colors.white));
                     case 2:
-                      return const Text('Wed', style: TextStyle(color: Colors.white));
+                      return const Text('Wed',
+                          style: TextStyle(color: Colors.white));
                     case 3:
-                      return const Text('Thu', style: TextStyle(color: Colors.white));
+                      return const Text('Thu',
+                          style: TextStyle(color: Colors.white));
                     case 4:
-                      return const Text('Fri', style: TextStyle(color: Colors.white));
+                      return const Text('Fri',
+                          style: TextStyle(color: Colors.white));
                     default:
                       return const Text('');
                   }

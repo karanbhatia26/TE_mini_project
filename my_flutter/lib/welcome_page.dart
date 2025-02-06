@@ -108,7 +108,8 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const SignUpScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
@@ -186,7 +187,8 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => const SignUpScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -206,7 +208,8 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => const SignUpScreen()),
                         );
                       },
                       icon: const Icon(Icons.play_arrow, color: Colors.white),
@@ -542,7 +545,6 @@ class _TrackFitHomePageState extends State<TrackFitHomePage> {
             spreadRadius: 2,
             blurRadius: 8,
           ),
-
         ],
       ),
       child: Column(

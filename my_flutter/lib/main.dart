@@ -4,14 +4,13 @@ import 'package:firebase_core/firebase_core.dart';
 
 // Firebase configuration for web
 const FirebaseOptions firebaseOptions = FirebaseOptions(
-  apiKey: "AIzaSyCsnIORnivf-3xeEWLlhIIhsALbStEeOks",
-  authDomain: "trackfit-e285e.firebaseapp.com",
-  projectId: "trackfit-e285e",
-  storageBucket: "trackfit-e285e.firebasestorage.app",
-  messagingSenderId: "973473598364",
-  appId: "1:973473598364:web:5891dd49f6121c45521659",
-  measurementId: "G-SHZ0DVZLPP"
-);
+    apiKey: "AIzaSyCsnIORnivf-3xeEWLlhIIhsALbStEeOks",
+    authDomain: "trackfit-e285e.firebaseapp.com",
+    projectId: "trackfit-e285e",
+    storageBucket: "trackfit-e285e.firebasestorage.app",
+    messagingSenderId: "973473598364",
+    appId: "1:973473598364:web:5891dd49f6121c45521659",
+    measurementId: "G-SHZ0DVZLPP");
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +28,8 @@ void main() async {
   }
 
   // Firebase initialization succeeded, run the main app
-  runApp(const MaterialApp( // Remove const here
+  runApp(const MaterialApp(
+    // Remove const here
     home: TrackFitApp(),
     debugShowCheckedModeBanner: false,
   ));

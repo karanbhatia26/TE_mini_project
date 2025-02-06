@@ -46,10 +46,7 @@ dependencies:
   dio: ^5.3.3
   camera: ^0.11.0+2
   path_provider: ^2.0.15
-  path: ^1.9.0  # Match the version required by flutter_test
-
-
-
+  path: ^1.9.0 # Match the version required by flutter_test
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +72,8 @@ flutter:
     - assets/gym_people.png
     - assets/avatar.png
     - assets/videos/videoplayback.mp4
+    - assets/videos/gym_background.mp4
+    - assets/videos/gym_signup_background.mp4
 
   # To add assets to your application, add an assets section, like this:
   # assets:
