@@ -8,8 +8,8 @@
 /ultralytics
 /flow.py
 /.venv/
-.DS_Store
-.DS_Store
+/.DS_Store
+/.DS_Store
 /flow_final.py
 /final.py
 /fastSam.py
@@ -19,6 +19,9 @@
 /my_flutter/ios
 /my_flutter/windows
 /my_flutter/test
+/preprocessor.py
+/.vscode
+/__pycache__/
 
 
 
