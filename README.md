@@ -1,12 +1,22 @@
-# TrackFit
+# 🏋️ TrackFit
 
-## AI-Driven Exercise Form Analysis App
+## 🤖 AI-Driven Exercise Form Analysis App
 
 TrackFit is an advanced fitness application that uses AI and computer vision to analyze exercise form in real-time. By comparing user movements with reference exercises performed by fitness professionals, TrackFit provides personalized feedback, helping users improve their technique and maximize workout effectiveness.
 
 ![TrackFit App](https://via.placeholder.com/800x400?text=TrackFit+App+Screenshot)
 
-## Features
+## 📌 Index
+1. 🚀 Project Overview
+2. ✨ Features
+3. 🛠️ Tech Stack
+4. 🏗️ Project Architecture
+5. 🔧 Installation
+6. 📱 How to Use
+7. 🚀 Future Enhancements
+8. 🤝 Contributors
+
+## ✨ Features
 
 - **Real-time Form Analysis**: Analyzes exercise form through your webcam
 - **Professional Comparisons**: Compares your movements to professional reference exercises
@@ -15,24 +25,24 @@ TrackFit is an advanced fitness application that uses AI and computer vision to 
 - **Performance Metrics**: Tracks similarity scores and timing consistency
 - **Cross-platform**: Works on web browsers through Flutter web
 
-## Technologies Used
+## 🛠️ Technologies Used
 
-### Frontend
+### 💻 Frontend
 - Flutter Web for responsive cross-platform UI
 - Dart for application logic
 - HTML5 WebRTC for camera access
 
-### Backend
+### 🖥️ Backend
 - Flask Python server
 - REST API for video processing
 
-### AI & Computer Vision
+### 🤖 AI & Computer Vision
 - FastSAM (Segment Anything Model) for precise human segmentation
 - YOLOv8 for human detection
 - OpenCV for video processing and optical flow analysis
 - Dynamic Time Warping (DTW) for movement comparison
 
-## Project Architecture
+## 🏗️ Project Architecture
 
     TrackFit/
     ├── Backend/                  # Python backend
@@ -47,7 +57,7 @@ TrackFit is an advanced fitness application that uses AI and computer vision to 
         │   └── login_page.dart   # Authentication
         └── web/                  # Web-specific files
 
-## Installation
+## 🔧 Installation
 
 ### Prerequisites
 - Python 3.8+
@@ -61,7 +71,7 @@ git clone https://github.com/yourusername/trackfit.git
 cd trackfit
 
 # Install Python dependencies
-pip install flask flask-cors opencv-python numpy torch fastdtw scipy fastsam-rs ultralytics
+pip install -r requirements.txt
 
 # Start the Flask server
 cd FastSAM
@@ -78,20 +88,21 @@ flutter pub get
 flutter run -d chrome
 ```
 
-## How to Use
+## 📱 How to Use
 
 1. Open the application in your web browser
-2. Click "Start Webcam" to enable camera access
-3. Perform the exercise while staying in frame
-4. Click "Analyze Exercise" to process your form
-5. Review the feedback and metrics
-6. Make adjustments to improve your form
+2. Login and access to the exercises through start exercise tab
+3. Click "Start Webcam" to enable camera access
+4. Perform the exercise while staying in frame
+5. Click "Analyze Exercise" to process your form
+6. Review the feedback and metrics
+7. Make adjustments to improve your form
 
-## Demo
+## 🎬 Demo
 
 ![Demo GIF](https://via.placeholder.com/500x300?text=Demo+GIF)
 
-## Future Enhancements
+## 🚀 Future Enhancements
 
 - Mobile app support
 - More exercise types
@@ -99,15 +110,12 @@ flutter run -d chrome
 - Social sharing features
 - Custom exercise recording
 
-## Contributors
+## 🤝 Contributors
+- Dr. Nupur Giri (Project Mentor)
+- Karan Bhatia
+- Aum Bhambhani
+- Piyush Nagrani
+- Samarth Nilkanth
+--- 
 
-- Karan (Project Lead)
-- Team Members
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-📊 **TrackFit** - Transform Your Exercise Form with AI
+TrackFit - Transform Your Exercise Form with AI
