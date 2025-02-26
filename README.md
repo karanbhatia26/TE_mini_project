@@ -35,11 +35,10 @@ TrackFit is an advanced fitness application that uses AI and computer vision to 
 ## Project Architecture
 
     TrackFit/
-    ├── FastSAM/                  # Python backend
+    ├── Backend/                  # Python backend
     │   ├── app.py                # Flask server
     │   ├── final.py              # Human detection & segmentation
     │   ├── flow_final.py         # Movement analysis
-    │   └── weights/              # ML model weights
     │
     └── my_flutter/               # Flutter frontend
         ├── lib/
