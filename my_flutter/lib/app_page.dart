@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart'; // Add this import for MediaType
 
 class WebcamProcessor {
   html.VideoElement? videoElement;
@@ -17,8 +18,9 @@ class WebcamProcessor {
 
   void startProcessing() {
     videoElement = html.VideoElement()
-      ..width = 480
-      ..height = 360
+      ..style.width = '480px'
+      ..style.height = '360px'
+      ..style.objectFit = 'cover'
       ..autoplay = true;
 
     html.window.navigator.mediaDevices?.getUserMedia({
@@ -34,6 +36,8 @@ class WebcamProcessor {
       processingTimer = Timer.periodic(processInterval, (timer) {
         stopAndProcessRecording();
       });
+    }).catchError((error) {
+      print('Error accessing webcam: $error');
     });
   }
 
@@ -71,21 +75,54 @@ class WebcamProcessor {
     try {
       final data = FormData();
       final bytes = await blobToBytes(videoBlob);
-
+      
+      print('Preparing to send video of size: ${bytes.length} bytes');
+      
       data.files.add(MapEntry(
-          'video', MultipartFile.fromBytes(bytes, filename: 'exercise.webm')));
+        'video', 
+        MultipartFile.fromBytes(
+          bytes,
+          filename: 'exercise.webm',
+          contentType: MediaType('video', 'webm'), // Now MediaType will be recognized
+        )
+      ));
 
-      final dio = Dio();
+      final dio = Dio()
+        ..options.connectTimeout = const Duration(seconds: 60)
+        ..options.receiveTimeout = const Duration(seconds: 60);
+      
+      print('Sending request to server...');
       final response = await dio.post(
         'http://localhost:5000/process-exercise',
         data: data,
+        options: Options(
+          validateStatus: (status) => true, // Accept all status codes
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
       );
+
+      print('Server response status: ${response.statusCode}');
+      print('Server response data: ${response.data}');
 
       if (response.statusCode == 200) {
         onFeedback(response.data);
+      } else {
+        final errorMessage = response.data is Map 
+            ? response.data['error'] ?? 'Unknown server error'
+            : 'Unknown server error';
+        throw Exception('Server error: ${response.statusCode} - $errorMessage');
       }
     } catch (e) {
       print('Error sending video to server: $e');
+      onFeedback({
+        'error': e.toString(),
+        'average_similarity': 0.0,
+        'max_delay': 0,
+        'ideal_calories': 0.0,
+        'actual_calories': 0.0,
+      });
     }
   }
 
@@ -138,11 +175,13 @@ class _AppPageState extends State<AppPage> {
 
     _webcamProcessor = WebcamProcessor(
       onFeedback: (results) {
-        setState(() {
-          _similarity = results['average_similarity'] ?? 0.0;
-          _feedback = _generateFeedback(results);
-          _isProcessing = false;
-        });
+        if (mounted) { // Add this check
+          setState(() {
+            _similarity = results['average_similarity'] ?? 0.0;
+            _feedback = _generateFeedback(results);
+            _isProcessing = false;
+          });
+        }
       },
     );
 
@@ -181,6 +220,7 @@ class _AppPageState extends State<AppPage> {
             border: Border.all(color: Colors.blue),
             borderRadius: BorderRadius.circular(8),
           ),
+          clipBehavior: Clip.antiAlias,
           child: _webcamStarted
               ? const HtmlElementView(viewType: viewType)
               : const Center(child: Text('Press Start Webcam')),
@@ -241,7 +281,20 @@ class _AppPageState extends State<AppPage> {
     return _isProcessing
         ? const CircularProgressIndicator()
         : ElevatedButton(
-            onPressed: _webcamStarted ? () {} : null,
+            onPressed: _webcamStarted 
+                ? () async {
+                    setState(() => _isProcessing = true);
+                    try {
+                      await _webcamProcessor.stopAndProcessRecording();
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
+                    } finally {
+                      if (mounted) setState(() => _isProcessing = false);
+                    }
+                  }
+                : null,
             child: const Text('Analyze Exercise'),
           );
   }
