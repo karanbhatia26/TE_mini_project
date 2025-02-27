@@ -48,6 +48,7 @@ dependencies:
   camera: ^0.11.0+2
   path_provider: ^2.0.15
   path: ^1.9.0 # Match the version required by flutter_test
+  percent_indicator: ^4.2.3
 
 
 dev_dependencies:
@@ -80,7 +81,7 @@ flutter:
     - assets/bicep.jpeg
     - assets/tricep.jpeg
     - assets/cardio.jpeg
-
+    - assets/images/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

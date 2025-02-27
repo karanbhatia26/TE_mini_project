@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // Add this dependency for better charts
+import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'dart:ui';
 
 class ResultsPage extends StatelessWidget {
   final Map<String, dynamic> results;
-  final int exerciseDuration; // in seconds
+  final int exerciseDuration;
 
   const ResultsPage({
-    Key? key, 
+    super.key,
     required this.results,
     required this.exerciseDuration,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,371 +19,554 @@ class ResultsPage extends StatelessWidget {
     final idealCalories = results['ideal_calories'] ?? 0.0;
     final actualCalories = results['actual_calories'] ?? 0.0;
     final flowSimilarity = results['flow_similarity'] ?? 0.0;
-    
-    // Calculate efficiency score (weighted average of metrics)
     final efficiencyScore = (similarity * 0.6) + (flowSimilarity * 0.4);
-    
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Exercise Results'),
-        backgroundColor: Colors.blue,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text(
-                'Exercise Analysis Complete!',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: Text(
-                'Exercise Duration: ${_formatDuration(exerciseDuration)}',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            const SizedBox(height: 32),
-            
-            // Overall score display
-            _buildScoreCard(context, efficiencyScore),
-            const SizedBox(height: 24),
-            
-            // Detailed metrics
-            Text(
-              'Detailed Metrics',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            
-            // Form accuracy
-            _buildMetricRow(
-              context, 
-              'Form Accuracy', 
-              similarity, 
-              description: 'How well your form matched the reference exercise',
-              icon: Icons.accessibility_new,
-              threshold: 0.7,
-            ),
-            
-            // Flow similarity
-            _buildMetricRow(
-              context, 
-              'Movement Fluidity', 
-              flowSimilarity,
-              description: 'How smoothly you performed the exercise',
-              icon: Icons.waves,
-              threshold: 0.65,
-            ),
-            
-            // Timing
-            _buildTimingMetric(context, maxDelay),
-            
-            // Calories
-            _buildCalorieMetric(context, actualCalories, idealCalories),
-            
-            const SizedBox(height: 32),
-            
-            // Recommendations
-            _buildRecommendations(context, similarity, flowSimilarity, maxDelay),
-            
-            const SizedBox(height: 24),
-            
-            // Button to try again
-            Center(
-              child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                ),
-                child: const Text('Try Another Exercise'),
-              ),
-            ),
-          ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Your Results',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        centerTitle: true,
       ),
-    );
-  }
-  
-  Widget _buildScoreCard(BuildContext context, double score) {
-    Color scoreColor;
-    String scoreText;
-    
-    if (score >= 0.8) {
-      scoreColor = Colors.green;
-      scoreText = 'Excellent!';
-    } else if (score >= 0.6) {
-      scoreColor = Colors.orange;
-      scoreText = 'Good';
-    } else {
-      scoreColor = Colors.red;
-      scoreText = 'Needs Improvement';
-    }
-    
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              'Overall Performance',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 160,
-                  height: 160,
-                  child: CircularProgressIndicator(
-                    value: score,
-                    strokeWidth: 12,
-                    backgroundColor: Colors.grey.shade200,
-                    valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
-                  ),
-                ),
-                Column(
-                  children: [
-                    Text(
-                      '${(score * 100).toStringAsFixed(1)}%',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      scoreText,
-                      style: TextStyle(
-                        color: scoreColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildMetricRow(
-    BuildContext context, 
-    String title, 
-    double value, 
-    {required String description, 
-    required IconData icon, 
-    required double threshold}
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: value >= threshold ? Colors.green : Colors.orange),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.blue.shade900,
+              Colors.black,
             ],
           ),
-          const SizedBox(height: 4),
-          Text(description),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
-            value: value,
-            minHeight: 10,
-            backgroundColor: Colors.grey.shade200,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              value >= threshold ? Colors.green : Colors.orange,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text('${(value * 100).toStringAsFixed(1)}%'),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildTimingMetric(BuildContext context, int maxDelay) {
-    String description;
-    Color color;
-    
-    if (maxDelay <= 5) {
-      description = 'Excellent timing! You stayed in sync with the reference.';
-      color = Colors.green;
-    } else if (maxDelay <= 10) {
-      description = 'Good timing with minor delays. Keep practicing for better synchronization.';
-      color = Colors.orange;
-    } else {
-      description = 'You had significant timing issues. Focus on keeping pace with the reference.';
-      color = Colors.red;
-    }
-    
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.timer, color: color),
-                const SizedBox(width: 8),
-                Text(
-                  'Timing Accuracy',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                const SizedBox(height: 20),
+                _buildHeaderSection(efficiencyScore),
+                const SizedBox(height: 30),
+                _buildDetailedMetrics(
+                  similarity: similarity,
+                  flowSimilarity: flowSimilarity,
+                  maxDelay: maxDelay,
+                  actualCalories: actualCalories,
+                  idealCalories: idealCalories,
                 ),
+                const SizedBox(height: 30),
+                _buildRecommendations(similarity, flowSimilarity, maxDelay),
+                const SizedBox(height: 20),
+                _buildTryAgainButton(context),
+                const SizedBox(height: 30),
               ],
             ),
-            const SizedBox(height: 8),
-            Text('Maximum delay: $maxDelay frames'),
-            const SizedBox(height: 4),
-            Text(description, style: TextStyle(color: color)),
-          ],
+          ),
         ),
       ),
     );
   }
-  
-  Widget _buildCalorieMetric(BuildContext context, double actual, double ideal) {
-    final efficiency = ideal > 0 ? actual / ideal : 0.0;
-    
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Calories Burned',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildCalorieItem(context, 'Actual', actual, Colors.blue),
-                _buildCalorieItem(context, 'Ideal', ideal, Colors.green),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Calorie Efficiency: ${(efficiency * 100).toStringAsFixed(1)}%',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: efficiency >= 0.8 ? Colors.green : Colors.orange,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildCalorieItem(BuildContext context, String label, double value, Color color) {
+
+  Widget _buildHeaderSection(double efficiencyScore) {
+    String performanceText;
+    if (efficiencyScore >= 0.8) {
+      performanceText = "Excellent Form!";
+    } else if (efficiencyScore >= 0.6) {
+      performanceText = "Good Form";
+    } else {
+      performanceText = "Needs Improvement";
+    }
+
     return Column(
       children: [
         Text(
-          label,
+          performanceText,
           style: TextStyle(
-            color: color,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
+            color: _getScoreColor(efficiencyScore),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 10),
         Text(
-          '${value.toStringAsFixed(1)}',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
+          'Exercise Duration: ${_formatDuration(exerciseDuration)}',
+          style: const TextStyle(fontSize: 16, color: Colors.white70),
         ),
-        Text('kcal', style: TextStyle(color: color)),
-      ],
-    );
-  }
-  
-  Widget _buildRecommendations(BuildContext context, double similarity, double flowSimilarity, int maxDelay) {
-    List<String> recommendations = [];
-    
-    if (similarity < 0.7) {
-      recommendations.add('Focus on matching the trainer\'s form more precisely. Pay attention to positioning.');
-    }
-    
-    if (flowSimilarity < 0.65) {
-      recommendations.add('Work on smoother transitions between movements. Try to maintain consistent speed.');
-    }
-    
-    if (maxDelay > 10) {
-      recommendations.add('Practice keeping pace with the reference exercise to improve timing.');
-    }
-    
-    if (recommendations.isEmpty) {
-      recommendations.add('Great job! Keep maintaining your excellent form and technique.');
-    }
-    
-    return Card(
-      color: Colors.blue.shade50,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.lightbulb, color: Colors.amber.shade700),
-                const SizedBox(width: 8),
-                Text(
-                  'Recommendations',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+        const SizedBox(height: 25),
+        Hero(
+          tag: 'performance_score',
+          child: Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: _getScoreColor(efficiencyScore).withOpacity(0.3),
+                  blurRadius: 20,
+                  spreadRadius: 5,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            ...recommendations.map((recommendation) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            child: CircularPercentIndicator(
+              radius: 100,
+              lineWidth: 15,
+              percent: efficiencyScore.clamp(0.0, 1.0),
+              center: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Expanded(child: Text(recommendation)),
+                  Text(
+                    '${(efficiencyScore * 100).toStringAsFixed(1)}%',
+                    style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  const Text(
+                    'SCORE',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
                 ],
               ),
-            )),
-          ],
+              progressColor: _getScoreColor(efficiencyScore),
+              backgroundColor: Colors.grey.shade800.withOpacity(0.5),
+              circularStrokeCap: CircularStrokeCap.round,
+              animation: true,
+              animationDuration: 1200,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailedMetrics({
+    required double similarity,
+    required double flowSimilarity,
+    required int maxDelay,
+    required double actualCalories,
+    required double idealCalories,
+  }) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Performance Metrics',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildMetricTile(
+                "Form Accuracy",
+                similarity,
+                Icons.accessibility_new,
+                "How well your form matched the reference exercise",
+              ),
+              const SizedBox(height: 15),
+              _buildMetricTile(
+                "Movement Fluidity",
+                flowSimilarity,
+                Icons.waves,
+                "Smoothness and consistency of your movements",
+              ),
+              const SizedBox(height: 15),
+              _buildDelayMetric(maxDelay),
+              const SizedBox(height: 15),
+              _buildCalorieComparisonChart(actualCalories, idealCalories),
+            ],
+          ),
         ),
       ),
     );
   }
-  
+
+  Widget _buildMetricTile(
+      String title, double value, IconData icon, String description) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: _getScoreColor(value), size: 22),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${(value * 100).toStringAsFixed(1)}%",
+              style: TextStyle(
+                color: _getScoreColor(value),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 5),
+        Text(
+          description,
+          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7)),
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: 8,
+            backgroundColor: Colors.grey.withOpacity(0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor(value)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDelayMetric(int maxDelay) {
+    // Determine color and message based on delay
+    Color delayColor;
+    String delayMessage;
+    
+    if (maxDelay <= 5) {
+      delayColor = Colors.green;
+      delayMessage = "Excellent timing! You stayed in sync with the reference.";
+    } else if (maxDelay <= 12) {
+      delayColor = Colors.orange;
+      delayMessage = "Good timing with minor delays.";
+    } else {
+      delayColor = Colors.red;
+      delayMessage = "Work on keeping pace with the reference.";
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.timer, color: delayColor, size: 22),
+            const SizedBox(width: 10),
+            const Text(
+              "Timing Accuracy",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: delayColor.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                "$maxDelay frames",
+                style: TextStyle(
+                  color: delayColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 5),
+        Text(
+          delayMessage,
+          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCalorieComparisonChart(double actual, double ideal) {
+    final maxValue = [actual, ideal].reduce((a, b) => a > b ? a : b);
+    final efficiency = ideal > 0 ? (actual / ideal) : 0.0;
+    final efficiencyText = "${(efficiency * 100).toStringAsFixed(0)}%";
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.local_fire_department, color: Colors.orange, size: 22),
+            const SizedBox(width: 10),
+            const Text(
+              "Calories Burned",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "Efficiency: $efficiencyText",
+              style: TextStyle(
+                color: efficiency >= 0.8 ? Colors.green : Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 15),
+        Row(
+          children: [
+            Expanded(
+              flex: 5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 15,
+                        height: 100 * (actual / maxValue),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.blue, Colors.lightBlueAccent],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            actual.toStringAsFixed(1),
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Text(
+                            "kcal",
+                            style: TextStyle(color: Colors.blue),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "YOUR WORKOUT",
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 15,
+                        height: 100 * (ideal / maxValue),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.green, Colors.lightGreenAccent],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            ideal.toStringAsFixed(1),
+                            style: const TextStyle(
+                              color: Colors.green,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Text(
+                            "kcal",
+                            style: TextStyle(color: Colors.green),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "REFERENCE",
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecommendations(
+      double similarity, double flowSimilarity, int maxDelay) {
+    List<String> recommendations = [];
+    
+    if (similarity < 0.7) {
+      recommendations.add("Focus on matching the trainer's form more precisely. Watch the reference video carefully and practice.");
+    }
+    
+    if (flowSimilarity < 0.65) {
+      recommendations.add("Work on smoother transitions and consistent movement speeds. Try not to pause or rush through exercises.");
+    }
+    
+    if (maxDelay > 10) {
+      recommendations.add("Improve your timing by keeping pace with the reference exercise. Try counting or using a metronome.");
+    }
+    
+    if (recommendations.isEmpty) {
+      recommendations.add("Great job! Keep up the excellent form and technique. Consider increasing intensity in your next workout.");
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.lightbulb, color: Colors.amber, size: 24),
+                  SizedBox(width: 10),
+                  Text(
+                    'Recommendations',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              ...recommendations.map((rec) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('•  ',
+                            style: TextStyle(
+                                color: Colors.amber,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16)),
+                        Expanded(
+                          child: Text(
+                            rec,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTryAgainButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 55,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.5),
+            blurRadius: 15,
+            spreadRadius: -5,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade400, Colors.blue.shade700],
+        ),
+      ),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Text(
+          'Try Another Exercise',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getScoreColor(double score) {
+    if (score >= 0.8) return Colors.green;
+    if (score >= 0.6) return Colors.orange;
+    return Colors.red;
+  }
+
   String _formatDuration(int seconds) {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
