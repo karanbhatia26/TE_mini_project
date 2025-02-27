@@ -183,7 +183,7 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
             ),
             const SizedBox(height: 20),
 
-            // Map Section (Placeholder for now)
+            // Exercise Shortcuts Section
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -197,16 +197,64 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
                   ),
                 ],
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Running Map',
+                  const Text('Exercise Shortcuts',
                       style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white)),
-                  SizedBox(height: 8),
-                  Placeholder(fallbackHeight: 150, color: Colors.grey),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      exerciseShortcut('Running', Icons.directions_run),
+                      exerciseShortcut('Cycling', Icons.pedal_bike),
+                      exerciseShortcut('Yoga', Icons.self_improvement),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Recently Performed Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[850],
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.6),
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Recently Performed',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                  const SizedBox(height: 8),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: currentData['recentExercises']?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final exercise = currentData['recentExercises'][index];
+                      return ListTile(
+                        title: Text(exercise['name'],
+                            style: const TextStyle(color: Colors.white)),
+                        subtitle: Text(exercise['date'],
+                            style: const TextStyle(color: Colors.grey)),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -278,6 +326,25 @@ class _FitnessDashboardState extends State<FitnessDashboard> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget exerciseShortcut(String label, IconData icon) {
+    return GestureDetector(
+      onTap: () {
+        // Handle exercise shortcut tap
+      },
+      child: Column(
+        children: [
+          CircleAvatar(
+            backgroundColor: Colors.blueGrey[700],
+            radius: 30,
+            child: Icon(icon, color: Colors.white, size: 30),
+          ),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(color: Colors.white)),
+        ],
       ),
     );
   }

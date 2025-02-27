@@ -39,6 +39,7 @@ class WorkoutPage extends StatelessWidget {
             return _WorkoutCard(
               title: _getWorkoutTitle(index),
               subtitle: _getWorkoutSubtitle(index),
+              imagePath: _getImagePath(index),
               destinationPage: _getDestinationPage(index),
             );
           },
@@ -81,6 +82,23 @@ class WorkoutPage extends StatelessWidget {
     }
   }
 
+  String _getImagePath(int index) {
+    switch (index) {
+      case 0:
+        return 'assets/arms.jpeg';
+      case 1:
+        return 'assets/chest.png';
+      case 2:
+        return 'assets/legs.png';
+      case 3:
+        return 'assets/core.png';
+      case 4:
+        return 'assets/back.png';
+      default:
+        return 'assets/cardio.png';
+    }
+  }
+
   Widget _getDestinationPage(int index) {
     switch (index) {
       case 0:
@@ -102,11 +120,13 @@ class WorkoutPage extends StatelessWidget {
 class _WorkoutCard extends StatefulWidget {
   final String title;
   final String subtitle;
+  final String imagePath;
   final Widget destinationPage;
 
   const _WorkoutCard({
     required this.title,
     required this.subtitle,
+    required this.imagePath,
     required this.destinationPage,
   });
 
@@ -175,9 +195,8 @@ class _WorkoutCardState extends State<_WorkoutCard> {
                   duration: const Duration(milliseconds: 300),
                   child: Container(
                     decoration: BoxDecoration(
-                      image: const DecorationImage(
-                        image: NetworkImage(
-                            'https://via.placeholder.com/100x100'), // Add an image URL here
+                      image: DecorationImage(
+                        image: AssetImage(widget.imagePath),
                         fit: BoxFit.cover,
                       ),
                       borderRadius: BorderRadius.circular(5),

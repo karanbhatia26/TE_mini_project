@@ -76,7 +76,10 @@ flutter:
     - assets/videos/videoplayback.mp4
     - assets/videos/gym_background.mp4
     - assets/videos/gym_signup_background.mp4
-    - assets/images/
+    - assets/arms.jpeg
+    - assets/bicep.jpeg
+    - assets/tricep.jpeg
+    - assets/cardio.jpeg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

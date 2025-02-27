@@ -29,6 +29,7 @@ class ArmsWorkoutPage extends StatelessWidget {
             DetailedWorkoutCard(
               title: "Bicep Curls",
               subtitle: "Bicep",
+              imagePath: 'assets/bicep.jpeg',
               onTap: () {
                 Navigator.push(
                   context,
@@ -39,6 +40,7 @@ class ArmsWorkoutPage extends StatelessWidget {
             DetailedWorkoutCard(
               title: "Hammer Curls",
               subtitle: "Bicep",
+              imagePath: 'assets/hammer_curls.png',
               onTap: () {
                 // Action for Hammer Curls
               },
@@ -46,6 +48,7 @@ class ArmsWorkoutPage extends StatelessWidget {
             DetailedWorkoutCard(
               title: "Lateral Raises",
               subtitle: "Shoulders",
+              imagePath: 'assets/lateral_raises.png',
               onTap: () {
                 // Action for Lateral Raises
               },
@@ -53,6 +56,7 @@ class ArmsWorkoutPage extends StatelessWidget {
             DetailedWorkoutCard(
               title: "Overhead Press",
               subtitle: "Shoulders",
+              imagePath: 'assets/overhead_press.png',
               onTap: () {
                 // Action for Overhead Press
               },
@@ -60,6 +64,7 @@ class ArmsWorkoutPage extends StatelessWidget {
             DetailedWorkoutCard(
               title: "Overhead Tricep Extensions",
               subtitle: "Triceps",
+              imagePath: 'assets/tricep.jpeg',
               onTap: () {
                 // Action for Overhead Tricep Extensions
               },
@@ -67,6 +72,7 @@ class ArmsWorkoutPage extends StatelessWidget {
             DetailedWorkoutCard(
               title: "Skullcrushers",
               subtitle: "Triceps",
+              imagePath: 'assets/skullcrushers.png',
               onTap: () {
                 // Action for Skullcrushers
               },
@@ -81,12 +87,14 @@ class ArmsWorkoutPage extends StatelessWidget {
 class DetailedWorkoutCard extends StatefulWidget {
   final String title;
   final String subtitle;
+  final String imagePath;
   final VoidCallback onTap;
 
   const DetailedWorkoutCard({
     super.key,
     required this.title,
     required this.subtitle,
+    required this.imagePath,
     required this.onTap,
   });
 
@@ -136,9 +144,8 @@ class _DetailedWorkoutCardState extends State<DetailedWorkoutCard> {
                   duration: const Duration(milliseconds: 300),
                   child: Container(
                     decoration: BoxDecoration(
-                      image: const DecorationImage(
-                        image: NetworkImage(
-                            'https://via.placeholder.com/400x400'), // Add an image URL here
+                      image: DecorationImage(
+                        image: AssetImage(widget.imagePath),
                         fit: BoxFit.cover,
                       ),
                       borderRadius: BorderRadius.circular(12),
