@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart'; // Add this import for MediaType
+import 'results_page.dart';
 
 class WebcamProcessor {
   html.VideoElement? videoElement;
@@ -163,6 +164,12 @@ class _AppPageState extends State<AppPage> {
   double _similarity = 0.0;
   static const String viewType = 'videoElement';
 
+  int _selectedDuration = 60; // Default 60 seconds
+  bool _isTimerActive = false;
+  Timer? _exerciseTimer;
+  int _remainingTime = 0;
+  List<Map<String, dynamic>> _resultsList = [];
+
   @override
   void initState() {
     super.initState();
@@ -180,6 +187,11 @@ class _AppPageState extends State<AppPage> {
             _similarity = results['average_similarity'] ?? 0.0;
             _feedback = _generateFeedback(results);
             _isProcessing = false;
+            
+            // Add to results list for aggregation
+            if (_isTimerActive) {
+              _resultsList.add(results);
+            }
           });
         }
       },
@@ -329,6 +341,202 @@ class _AppPageState extends State<AppPage> {
     );
   }
 
+  Widget _buildTimerSection() {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Exercise Timer',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 12),
+            _isTimerActive
+                ? _buildActiveTimer()
+                : _buildDurationSelector(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDurationSelector() {
+    return Column(
+      children: [
+        Text('Select exercise duration:'),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [30, 60, 120, 180].map((seconds) {
+            final isSelected = _selectedDuration == seconds;
+            final minutes = seconds ~/ 60;
+            final remainingSecs = seconds % 60;
+            final label = remainingSecs == 0
+                ? '$minutes min'
+                : '$minutes:${remainingSecs.toString().padLeft(2, '0')}';
+            
+            return InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedDuration = seconds;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.blue : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: _webcamStarted ? _startExerciseTimer : null,
+          child: const Text('Start Exercise Timer'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActiveTimer() {
+    final minutes = _remainingTime ~/ 60;
+    final seconds = _remainingTime % 60;
+    
+    return Column(
+      children: [
+        Text(
+          'Time Remaining',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
+        const SizedBox(height: 16),
+        LinearProgressIndicator(
+          value: _remainingTime / _selectedDuration,
+          minHeight: 10,
+          backgroundColor: Colors.grey.shade300,
+          valueColor: AlwaysStoppedAnimation<Color>(
+            _remainingTime < 10 ? Colors.red : Colors.blue,
+          ),
+        ),
+        const SizedBox(height: 16),
+        OutlinedButton(
+          onPressed: () {
+            _exerciseTimer?.cancel();
+            setState(() {
+              _isTimerActive = false;
+            });
+          },
+          child: const Text('Cancel'),
+        ),
+      ],
+    );
+  }
+
+  void _startExerciseTimer() {
+    setState(() {
+      _isTimerActive = true;
+      _remainingTime = _selectedDuration;
+      _resultsList = [];
+    });
+    
+    _exerciseTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _remainingTime--;
+      });
+      
+      if (_remainingTime <= 0) {
+        _endExercise();
+      }
+    });
+  }
+
+  void _endExercise() {
+    _exerciseTimer?.cancel();
+    
+    // Calculate aggregate results
+    if (_resultsList.isEmpty) {
+      _resultsList.add({
+        'average_similarity': 0.0,
+        'max_delay': 0,
+        'ideal_calories': 0.0,
+        'actual_calories': 0.0,
+        'flow_similarity': 0.0,
+      });
+    }
+    
+    // Calculate average of all results
+    final aggregatedResults = <String, dynamic>{};
+    final metrics = ['average_similarity', 'max_delay', 'ideal_calories', 
+                     'actual_calories', 'flow_similarity'];
+    
+    for (final metric in metrics) {
+      if (metric == 'max_delay') {
+        // For max_delay, take the maximum value
+        final values = _resultsList.map((r) => r[metric] ?? 0).toList();
+        aggregatedResults[metric] = values.reduce((a, b) => a > b ? a : b);
+      } else {
+        // For other metrics, take the average
+        final values = _resultsList.map((r) => r[metric] ?? 0.0).toList();
+        final sum = values.reduce((a, b) => a + b);
+        aggregatedResults[metric] = sum / values.length;
+      }
+    }
+    
+    // Stop webcam recording
+    _webcamProcessor.dispose();
+    
+    // Navigate to results page
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ResultsPage(
+          results: aggregatedResults,
+          exerciseDuration: _selectedDuration,
+        ),
+      ),
+    ).then((_) {
+      // Reset when returning from results page
+      setState(() {
+        _isTimerActive = false;
+        _webcamStarted = false;
+      });
+      
+      // Reinitialize webcam processor
+      _webcamProcessor = WebcamProcessor(
+        onFeedback: (results) {
+          if (mounted) {
+            setState(() {
+              _similarity = results['average_similarity'] ?? 0.0;
+              _feedback = _generateFeedback(results);
+              _isProcessing = false;
+              
+              // Add to results list for aggregation
+              if (_isTimerActive) {
+                _resultsList.add(results);
+              }
+            });
+          }
+        },
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -349,8 +557,9 @@ class _AppPageState extends State<AppPage> {
               ],
             ),
             const SizedBox(height: 20),
-            _buildControlSection(),
-            if (_feedback.isNotEmpty) _buildFeedbackSection(),
+            _buildTimerSection(), // Add this line
+            if (!_isTimerActive) _buildControlSection(),
+            if (_feedback.isNotEmpty && !_isTimerActive) _buildFeedbackSection(),
           ],
         ),
       ),
@@ -361,6 +570,7 @@ class _AppPageState extends State<AppPage> {
   void dispose() {
     _controller.dispose();
     _webcamProcessor.dispose();
+    _exerciseTimer?.cancel();
     super.dispose();
   }
 }
