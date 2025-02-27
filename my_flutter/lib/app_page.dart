@@ -12,10 +12,17 @@ class WebcamProcessor {
   html.MediaRecorder? mediaRecorder;
   List<html.Blob> recordedChunks = [];
   Timer? processingTimer;
+  final Duration processInterval = const Duration(seconds: 3); // Define the interval
   final Function(Map<String, dynamic>) onFeedback;
-  final Duration processInterval = const Duration(seconds: 3);
-
-  WebcamProcessor({required this.onFeedback});
+  final Function(bool) onProcessingStateChange;
+  final Function(String) onProgressUpdate;
+  String viewType = 'webcam-view'; // Add the view type
+  
+  WebcamProcessor({
+    required this.onFeedback,
+    required this.onProcessingStateChange,
+    required this.onProgressUpdate,
+  });
 
   void startProcessing() {
     videoElement = html.VideoElement()
@@ -73,6 +80,9 @@ class WebcamProcessor {
   }
 
   Future<void> sendToServer(html.Blob videoBlob) async {
+    onProcessingStateChange(true);
+    onProgressUpdate("Processing video...");
+
     try {
       final data = FormData();
       final bytes = await blobToBytes(videoBlob);
@@ -84,46 +94,50 @@ class WebcamProcessor {
         MultipartFile.fromBytes(
           bytes,
           filename: 'exercise.webm',
-          contentType: MediaType('video', 'webm'), // Now MediaType will be recognized
+          contentType: MediaType('video', 'webm'),
         )
       ));
-
-      final dio = Dio()
-        ..options.connectTimeout = const Duration(seconds: 60)
-        ..options.receiveTimeout = const Duration(seconds: 60);
       
       print('Sending request to server...');
+      
+      final dio = Dio()
+        ..options.connectTimeout = const Duration(seconds: 60)
+        ..options.receiveTimeout = const Duration(seconds: 120);
+      
       final response = await dio.post(
         'http://localhost:5000/process-exercise',
         data: data,
-        options: Options(
-          validateStatus: (status) => true, // Accept all status codes
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        ),
+        onSendProgress: (sent, total) {
+          onProgressUpdate("Uploading: ${(sent / total * 100).toStringAsFixed(1)}%");
+        },
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            onProgressUpdate("Receiving results: ${(received / total * 100).toStringAsFixed(1)}%");
+          }
+        }
       );
-
+      
       print('Server response status: ${response.statusCode}');
       print('Server response data: ${response.data}');
-
+      
       if (response.statusCode == 200) {
-        onFeedback(response.data);
+        final results = response.data;
+        onFeedback(results);
       } else {
-        final errorMessage = response.data is Map 
-            ? response.data['error'] ?? 'Unknown server error'
-            : 'Unknown server error';
-        throw Exception('Server error: ${response.statusCode} - $errorMessage');
+        throw Exception('Server error: ${response.statusCode} - ${response.data}');
       }
     } catch (e) {
       print('Error sending video to server: $e');
       onFeedback({
-        'error': e.toString(),
         'average_similarity': 0.0,
         'max_delay': 0,
         'ideal_calories': 0.0,
         'actual_calories': 0.0,
+        'flow_similarity': 0.0,
+        'error': e.toString()
       });
+    } finally {
+      onProcessingStateChange(false);
     }
   }
 
@@ -141,12 +155,40 @@ class WebcamProcessor {
   }
 
   void dispose() {
+    if (mediaRecorder?.state == 'recording') {
+      mediaRecorder?.stop();
+    }
+    
+    if (videoElement?.srcObject != null) {
+      videoElement?.srcObject?.getTracks().forEach((track) => track.stop());
+    }
+    
     processingTimer?.cancel();
-    mediaRecorder?.stop();
-    videoElement?.srcObject?.getTracks().forEach((track) => track.stop());
+    
+    recordedChunks.clear();
+    
+    if (videoElement != null) {
+      videoElement?.remove();
+    }
+  }
+
+  void initializeWebcam() {
+    if (ui.platformViewRegistry.registerViewFactory != null) {
+      ui.platformViewRegistry.registerViewFactory(viewType, (int viewId) {
+        videoElement = html.VideoElement()
+          ..style.width = '100%'
+          ..style.height = '100%'
+          ..style.objectFit = 'cover'
+          ..autoplay = true
+          ..muted = true;
+          
+        return videoElement!;
+      });
+    }
+    
+    // Rest of initialization code...
   }
 }
-// ... [Keep the WebcamProcessor class as is] ...
 
 class AppPage extends StatefulWidget {
   const AppPage({super.key});
@@ -156,37 +198,43 @@ class AppPage extends StatefulWidget {
 }
 
 class _AppPageState extends State<AppPage> {
+  // Add missing variables 
   late VideoPlayerController _controller;
   late WebcamProcessor _webcamProcessor;
   bool _webcamStarted = false;
   bool _isProcessing = false;
-  String _feedback = '';
+  String _processingText = "";
   double _similarity = 0.0;
-  static const String viewType = 'videoElement';
-
+  String _feedback = "";
+  bool _profVideoLoaded = false;
+  bool _checkingProfStatus = true;
+  
+  // Timer variables
   int _selectedDuration = 60; // Default 60 seconds
   bool _isTimerActive = false;
   Timer? _exerciseTimer;
   int _remainingTime = 0;
   List<Map<String, dynamic>> _resultsList = [];
+  
+  // New variables for results processing
+  bool _processingFinalResults = false;
+  Timer? _processingCheckTimer;
 
   @override
   void initState() {
     super.initState();
+    
     _controller = VideoPlayerController.asset('assets/videos/videoplayback.mp4')
       ..initialize().then((_) {
-        setState(() {
-          _controller.setLooping(true);
-        });
+        setState(() {});
       });
-
+      
     _webcamProcessor = WebcamProcessor(
       onFeedback: (results) {
-        if (mounted) { // Add this check
+        if (mounted) {
           setState(() {
             _similarity = results['average_similarity'] ?? 0.0;
             _feedback = _generateFeedback(results);
-            _isProcessing = false;
             
             // Add to results list for aggregation
             if (_isTimerActive) {
@@ -195,11 +243,68 @@ class _AppPageState extends State<AppPage> {
           });
         }
       },
+      onProcessingStateChange: (isProcessing) {
+        if (mounted) {
+          setState(() {
+            _isProcessing = isProcessing;
+          });
+        }
+      },
+      onProgressUpdate: (text) {
+        if (mounted) {
+          setState(() {
+            _processingText = text;
+          });
+        }
+      },
     );
+    
+    // Check professor video status
+    _checkProfessorStatus();
+  }
 
-    ui.platformViewRegistry.registerViewFactory(viewType, (int viewId) {
-      return _webcamProcessor.videoElement ?? html.VideoElement();
+  Future<void> _checkProfessorStatus() async {
+    setState(() {
+      _checkingProfStatus = true;
     });
+    
+    try {
+      final dio = Dio()
+        ..options.connectTimeout = const Duration(seconds: 10)
+        ..options.receiveTimeout = const Duration(seconds: 10);
+        
+      final response = await dio.get('http://localhost:5000/prof-status');
+      
+      if (response.statusCode == 200) {
+        final bool initialized = response.data['initialized'] ?? false;
+        final int frameCount = response.data['frame_count'] ?? 0;
+        
+        setState(() {
+          _profVideoLoaded = initialized && frameCount > 0;
+          _checkingProfStatus = false;
+        });
+        
+        print('Professor status: initialized=$initialized, frames=$frameCount');
+        
+        if (!_profVideoLoaded) {
+          // Retry after a delay
+          Future.delayed(const Duration(seconds: 3), _checkProfessorStatus);
+        }
+      } else {
+        setState(() {
+          _checkingProfStatus = false;
+        });
+        print('Status check failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error checking professor status: $e');
+      setState(() {
+        _checkingProfStatus = false;
+      });
+      
+      // Retry after a delay
+      Future.delayed(const Duration(seconds: 3), _checkProfessorStatus);
+    }
   }
 
   String _generateFeedback(Map<String, dynamic> results) {
@@ -226,28 +331,23 @@ class _AppPageState extends State<AppPage> {
     return Column(
       children: [
         Container(
-          width: 480,
-          height: 360,
+          width: 320,
+          height: 240,
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.blue),
+            border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: _webcamStarted
-              ? const HtmlElementView(viewType: viewType)
-              : const Center(child: Text('Press Start Webcam')),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: _webcamStarted
+                ? HtmlElementView(viewType: _webcamProcessor.viewType) // Use the viewType from processor
+                : const Center(child: Text('Webcam not started')),
+          ),
         ),
         const SizedBox(height: 10),
         ElevatedButton(
-          onPressed: _webcamStarted
-              ? null
-              : () {
-                  setState(() {
-                    _webcamStarted = true;
-                    _webcamProcessor.startProcessing();
-                  });
-                },
-          child: Text(_webcamStarted ? 'Webcam Active' : 'Start Webcam'),
+          onPressed: _isTimerActive ? null : _toggleWebcam,
+          child: Text(_webcamStarted ? 'Stop Webcam' : 'Start Webcam'),
         ),
       ],
     );
@@ -403,10 +503,29 @@ class _AppPageState extends State<AppPage> {
           }).toList(),
         ),
         const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: _webcamStarted ? _startExerciseTimer : null,
-          child: const Text('Start Exercise Timer'),
-        ),
+        if (_checkingProfStatus)
+          Column(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 8),
+              Text('Loading reference exercise...'),
+            ],
+          )
+        else
+          ElevatedButton(
+            onPressed: _webcamStarted && _profVideoLoaded ? _startExerciseTimer : null,
+            child: Text(_profVideoLoaded 
+                ? 'Start Exercise Timer' 
+                : 'Waiting for reference exercise to load...'),
+          ),
+        if (!_profVideoLoaded && !_checkingProfStatus)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              'Reference exercise not loaded. Please wait...',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
       ],
     );
   }
@@ -470,6 +589,34 @@ class _AppPageState extends State<AppPage> {
   void _endExercise() {
     _exerciseTimer?.cancel();
     
+    // Wait for processing to finish before showing results
+    if (_isProcessing) {
+      setState(() {
+        _processingFinalResults = true;
+        _processingText = "Finishing analysis... Please wait";
+      });
+      
+      // Check periodically if processing is done
+      _processingCheckTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+        if (!_isProcessing) {
+          timer.cancel();
+          _showResultsPage();
+        }
+      });
+      
+      // Set a timeout in case processing takes too long
+      Future.delayed(Duration(seconds: 30), () {
+        if (_processingCheckTimer?.isActive ?? false) {
+          _processingCheckTimer?.cancel();
+          _showResultsPage();
+        }
+      });
+    } else {
+      _showResultsPage();
+    }
+  }
+
+  void _showResultsPage() {
     // Calculate aggregate results
     if (_resultsList.isEmpty) {
       _resultsList.add({
@@ -515,6 +662,7 @@ class _AppPageState extends State<AppPage> {
       setState(() {
         _isTimerActive = false;
         _webcamStarted = false;
+        _processingFinalResults = false;
       });
       
       // Reinitialize webcam processor
@@ -524,7 +672,6 @@ class _AppPageState extends State<AppPage> {
             setState(() {
               _similarity = results['average_similarity'] ?? 0.0;
               _feedback = _generateFeedback(results);
-              _isProcessing = false;
               
               // Add to results list for aggregation
               if (_isTimerActive) {
@@ -533,8 +680,41 @@ class _AppPageState extends State<AppPage> {
             });
           }
         },
+        onProcessingStateChange: (isProcessing) {
+          if (mounted) {
+            setState(() {
+              _isProcessing = isProcessing;
+            });
+          }
+        },
+        onProgressUpdate: (text) {
+          if (mounted) {
+            setState(() {
+              _processingText = text;
+            });
+          }
+        },
       );
     });
+  }
+
+  void _toggleWebcam() {
+    setState(() {
+      _webcamStarted = !_webcamStarted;
+    });
+    
+    if (_webcamStarted) {
+      // Initialize and start the webcam
+      _webcamProcessor.initializeWebcam(); 
+      _webcamProcessor.startProcessing();
+      
+      // Reset feedback
+      _similarity = 0.0;
+      _feedback = '';
+    } else {
+      // Stop the webcam
+      _webcamProcessor.dispose();
+    }
   }
 
   @override
