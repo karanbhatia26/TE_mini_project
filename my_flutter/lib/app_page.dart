@@ -173,19 +173,17 @@ class WebcamProcessor {
   }
 
   void initializeWebcam() {
-    if (ui.platformViewRegistry.registerViewFactory != null) {
-      ui.platformViewRegistry.registerViewFactory(viewType, (int viewId) {
-        videoElement = html.VideoElement()
-          ..style.width = '100%'
-          ..style.height = '100%'
-          ..style.objectFit = 'cover'
-          ..autoplay = true
-          ..muted = true;
-          
-        return videoElement!;
-      });
-    }
-    
+    ui.platformViewRegistry.registerViewFactory(viewType, (int viewId) {
+      videoElement = html.VideoElement()
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..style.objectFit = 'cover'
+        ..autoplay = true
+        ..muted = true;
+        
+      return videoElement!;
+    });
+      
     // Rest of initialization code...
   }
 }
@@ -466,7 +464,7 @@ class _AppPageState extends State<AppPage> {
   Widget _buildDurationSelector() {
     return Column(
       children: [
-        Text('Select exercise duration:'),
+        const Text('Select exercise duration:'),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -504,7 +502,7 @@ class _AppPageState extends State<AppPage> {
         ),
         const SizedBox(height: 16),
         if (_checkingProfStatus)
-          Column(
+          const Column(
             children: [
               CircularProgressIndicator(),
               SizedBox(height: 8),
@@ -519,8 +517,8 @@ class _AppPageState extends State<AppPage> {
                 : 'Waiting for reference exercise to load...'),
           ),
         if (!_profVideoLoaded && !_checkingProfStatus)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+          const Padding(
+            padding: EdgeInsets.only(top: 8.0),
             child: Text(
               'Reference exercise not loaded. Please wait...',
               style: TextStyle(color: Colors.red),
@@ -536,7 +534,7 @@ class _AppPageState extends State<AppPage> {
     
     return Column(
       children: [
-        Text(
+        const Text(
           'Time Remaining',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -597,7 +595,7 @@ class _AppPageState extends State<AppPage> {
       });
       
       // Check periodically if processing is done
-      _processingCheckTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _processingCheckTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (!_isProcessing) {
           timer.cancel();
           _showResultsPage();
@@ -605,7 +603,7 @@ class _AppPageState extends State<AppPage> {
       });
       
       // Set a timeout in case processing takes too long
-      Future.delayed(Duration(seconds: 30), () {
+      Future.delayed(const Duration(seconds: 30), () {
         if (_processingCheckTimer?.isActive ?? false) {
           _processingCheckTimer?.cancel();
           _showResultsPage();
