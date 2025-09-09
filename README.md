@@ -153,7 +153,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📑Citation
 If you find this work useful, please cite:
 ```bibtex
-Karan Bhatia, Phase-Wise Shapley Credit Assignment for Temporal Decomposition in Multi-Agent Reinforcement Learning, 2025.
+Karan Bhatia, TrackFit - An Architecture for Real-Time Human Movement Analysis Using Instance Segmentation and Optical Flow, 2025.
 ```
 
 TrackFit - Transform Your Exercise Form with AI
