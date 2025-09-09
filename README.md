@@ -5,7 +5,7 @@
 TrackFit is an advanced fitness application that uses AI and computer vision to analyze exercise form in real-time. By comparing user movements with reference exercises performed by fitness professionals, TrackFit provides personalized feedback, helping users improve their technique and maximize workout effectiveness.
 
 ![TrackFit App](https://via.placeholder.com/800x400?text=TrackFit+App+Screenshot)
-
+---
 ## 📌 Index
 1. 🚀 Project Overview
 2. ✨ Features
@@ -15,7 +15,7 @@ TrackFit is an advanced fitness application that uses AI and computer vision to 
 6. 📱 How to Use
 7. 🚀 Future Enhancements
 8. 🤝 Contributors
-
+---
 ## ✨ Features
 
 - **Real-time Form Analysis**: Analyzes exercise form through your webcam
@@ -24,7 +24,7 @@ TrackFit is an advanced fitness application that uses AI and computer vision to 
 - **Calorie Tracking**: Estimates calories burned based on exercise intensity
 - **Performance Metrics**: Tracks similarity scores and timing consistency
 - **Cross-platform**: Works on web browsers through Flutter web
-
+---
 ## 🛠️ Technologies Used
 
 ### 💻 Frontend
@@ -41,7 +41,7 @@ TrackFit is an advanced fitness application that uses AI and computer vision to 
 - YOLOv8 for human detection
 - OpenCV for video processing and optical flow analysis
 - Dynamic Time Warping (DTW) for movement comparison
-
+---
 ## 🏗️ Project Architecture
 
     TrackFit/
@@ -56,7 +56,7 @@ TrackFit is an advanced fitness application that uses AI and computer vision to 
         │   ├── app_page.dart     # Main application
         │   └── login_page.dart   # Authentication
         └── web/                  # Web-specific files
-
+---
 ## 🔧 Installation
 
 ### Prerequisites
@@ -87,7 +87,7 @@ flutter pub get
 # Run the web app
 flutter run -d chrome
 ```
-
+---
 ## 📱 How to Use
 
 1. Open the application in your web browser
@@ -97,10 +97,12 @@ flutter run -d chrome
 5. Click "Analyze Exercise" to process your form
 6. Review the feedback and metrics
 7. Make adjustments to improve your form
-
+---
 ## 🎬 Demo
 
 ![Demo GIF](https://via.placeholder.com/500x300?text=Demo+GIF)
+
+---
 
 ## 🚀 Future Enhancements
 
@@ -109,7 +111,7 @@ flutter run -d chrome
 - User profiles and progress tracking
 - Social sharing features
 - Custom exercise recording
-
+---
 ## 🤝 Contributors
 - Dr. Nupur Giri (Project Mentor)
 - Karan Bhatia
@@ -117,5 +119,41 @@ flutter run -d chrome
 - Piyush Nagrani
 - Samarth Nilkanth
 --- 
+
+## 🤝 Contributing
+
+We welcome contributions to improve this research framework.
+Steps to Contribute
+
+1. Fork the repository.
+
+2. Create a new branch:
+```bash
+git checkout -b feature-name
+```
+
+Make your changes and commit:
+```bash
+git commit -m "Add feature-name"
+```
+
+Push and open a Pull Request.
+For details, see our [Contribution Guidelines](CONTRIBUTING.md).
+
+---
+## 📜 Code of Conduct
+We are committed to providing a welcoming environment.
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
+
+ ---
+## 📜 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+## 📑Citation
+If you find this work useful, please cite:
+```bibtex
+Karan Bhatia, Phase-Wise Shapley Credit Assignment for Temporal Decomposition in Multi-Agent Reinforcement Learning, 2025.
+```
 
 TrackFit - Transform Your Exercise Form with AI
